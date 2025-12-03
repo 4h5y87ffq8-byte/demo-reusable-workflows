@@ -22,15 +22,14 @@ jobs:
             local prefix=$1
             local file=$2
             for key in $(yq "$prefix | keys | .[]" $file); do
-              # Remove aspas do key
               clean_key=$(echo $key | sed 's/"//g')
               value=$(yq "$prefix.\"$clean_key\"" $file)
-              # Se for objeto ou array, chama recursivamente
               if yq "$prefix.\"$clean_key\"" $file | yq 'tag' | grep -qE '!!map|!!seq'; then
                 export_vars "$prefix.\"$clean_key\"" $file
               else
-                env_key=$(echo "$prefix.$clean_key" | sed 's/\./__/g; s/^app__//; s/"//g')
-                echo "app__${env_key}=${value}" >> $GITHUB_ENV
+                # Remove todos os prefixos ".app" e underscores extras
+                env_key=$(echo "$prefix.$clean_key" | sed 's/^\.app//; s/\./__/g; s/^__//; s/"//g')
+                echo "${env_key}=${value}" >> $GITHUB_ENV
               fi
             done
           }
