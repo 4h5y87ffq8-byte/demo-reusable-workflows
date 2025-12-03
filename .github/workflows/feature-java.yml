@@ -27,8 +27,8 @@ jobs:
               if yq "$prefix.\"$clean_key\"" $file | yq 'tag' | grep -qE '!!map|!!seq'; then
                 export_vars "$prefix.\"$clean_key\"" $file
               else
-                # Remove todos os prefixos ".app" e underscores extras
-                env_key=$(echo "$prefix.$clean_key" | sed 's/^\.app//; s/\./__/g; s/^__//; s/"//g')
+                # Mantém um prefixo "app" e remove duplicidade
+                env_key=$(echo "$prefix.$clean_key" | sed 's/^\.app/app/; s/^app\.//; s/\./__/g; s/"//g')
                 echo "${env_key}=${value}" >> $GITHUB_ENV
               fi
             done
