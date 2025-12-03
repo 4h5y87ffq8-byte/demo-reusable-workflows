@@ -16,18 +16,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Read .a5x_devops YAML
-        id: yaml_vars
-        uses: actions/read-yaml@v1
-        with:
-          file: .a5x_devops
-
       - name: Export all YAML entries as env vars
         run: |
-          for key in $(jq -r 'keys[]' <<< '${{ toJson(steps.yaml_vars.outputs) }}'); do
-            val=$(jq -r --arg k "$key" '.[$k]' <<< '${{ toJson(steps.yaml_vars.outputs) }}')
-            echo "${key}=${val}" >> $GITHUB_ENV
-          done
+          export_vars() {
+            local prefix=$1
+            local file=$2
+            for key in $(yq "$prefix | keys | .[]" $file); do
+              value=$(yq "$prefix.\"$key\"" $file)
+              if [[ "$value" =~ ^\{.*\}$ || "$value" =~ ^\[.*\]$ ]]; then
+                export_vars "$prefix.\"$key\"" $file
+              else
+                env_key=$(echo "$prefix.$key" | sed 's/\./__/g; s/^\.//')
+                echo "${env_key}=${value}" >> $GITHUB_ENV
+              fi
+            done
+          }
+          export_vars '.' .a5x_devops
         shell: bash
 
       - name: Set up JDK ${{ env.app__stack_version }}
