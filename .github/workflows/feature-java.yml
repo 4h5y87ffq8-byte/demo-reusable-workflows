@@ -35,16 +35,17 @@ jobs:
           export_vars '.app' .a5x_devops
         shell: bash
 
-      - name: Set up JDK ${{ env.__app__stack_version }}
+      - name: Set up JDK ${{ env.__app__build__stack_version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ env.__app__stack_version }}
+          java-version: ${{ env.__app__build__stack_version }}
 
       - name: Build with Maven
+        working-directory: ${{ env.__app__build__working-directory }}
         run: mvn clean install
 
       - name: Run Maven quality checks
-        working-directory: ./app
+        working-directory: ${{ env.__app__build__working-directory }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
