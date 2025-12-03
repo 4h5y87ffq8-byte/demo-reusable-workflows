@@ -30,16 +30,12 @@ jobs:
           done
         shell: bash
 
-      - name: Set up JDK ${{ inputs.java-version }}
+      - name: Set up JDK ${{ env.app__stack_version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ inputs.java-version }}
-
+          java-version: ${{ env.app__stack_version }}
       - name: Build with Maven
-        env:
-          APP_STACK: ${{ env.APP_STACK }}
-          APP_STACK_VERSION: ${{ env.APP_STACK_VERSION }}
         run: mvn clean install
         # Se usar Gradle, troque o comando acima por:
         # run: ./gradlew build
@@ -47,7 +43,7 @@ jobs:
       - name: Run Maven quality checks
         working-directory: ./app
         env:
-          APP_STACK: ${{ env.APP_STACK }}
-          APP_STACK_VERSION: ${{ env.APP_STACK_VERSION }}
+          APP_STACK: ${{ env.app__stack }}
+          APP_STACK_VERSION: ${{ env.app__stack_version }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
