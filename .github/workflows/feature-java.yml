@@ -16,6 +16,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Load envs from .a5x_devops
+        id: dotenv
+        uses: c-py/action-dotenv-to-setenv@v1
+        with:
+          path: .a5x_devops
+
+      - name: Export app.version
+        run: echo "APP_VERSION=${{ env.app.version }}" >> $GITHUB_ENV
+
       - name: Set up JDK ${{ inputs.java-version }}
         uses: actions/setup-java@v4
         with:
@@ -23,10 +32,15 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Build with Maven
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
         run: mvn clean install
         # Se usar Gradle, troque o comando acima por:
         # run: ./gradlew build
+
       - name: Run Maven quality checks
         working-directory: ./app
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
