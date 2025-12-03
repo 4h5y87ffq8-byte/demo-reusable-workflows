@@ -22,8 +22,8 @@ jobs:
         with:
           env-file: .a5x_devops
 
-      - name: Export app.version
-        run: echo "APP_VERSION=${{ env.app.version }}" >> $GITHUB_ENV
+      - name: Export app.stack.version
+        run: echo "APP_VERSION=${{ env.app.stack.version }}" >> $GITHUB_ENV
 
       - name: Set up JDK ${{ inputs.java-version }}
         uses: actions/setup-java@v4
