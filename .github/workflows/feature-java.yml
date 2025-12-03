@@ -20,7 +20,7 @@ jobs:
         id: dotenv
         uses: c-py/action-dotenv-to-setenv@v1
         with:
-          path: .a5x_devops
+          env-file: .a5x_devops
 
       - name: Export app.version
         run: echo "APP_VERSION=${{ env.app.version }}" >> $GITHUB_ENV
