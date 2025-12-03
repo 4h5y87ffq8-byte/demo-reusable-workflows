@@ -18,7 +18,7 @@ jobs:
 
       - name: Read .a5x_devops YAML
         id: yaml_vars
-        uses: peter-murray/read-yaml@v1
+        uses: actions/read-yaml@v1
         with:
           file: .a5x_devops
 
