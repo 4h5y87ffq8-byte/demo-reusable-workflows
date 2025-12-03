@@ -28,7 +28,7 @@ jobs:
                 export_vars "$prefix.\"$key\"" $file
               else
                 env_key=$(echo "$prefix.$key" | sed 's/\./__/g; s/^app__//')
-                echo "app__${env_key}=${value}" >> $GITHUB_ENV
+                echo "${env_key}=${value}" >> $GITHUB_ENV
               fi
             done
           }
