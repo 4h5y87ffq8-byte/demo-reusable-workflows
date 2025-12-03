@@ -23,7 +23,7 @@ jobs:
             local file=$2
             for key in $(yq "$prefix | keys | .[]" $file); do
               value=$(yq "$prefix.\"$key\"" $file)
-              # Verifica se é escalar (não objeto/array)
+              # Se for objeto ou array, chama recursivamente
               if yq "$prefix.\"$key\"" $file | yq 'tag' | grep -qE '!!map|!!seq'; then
                 export_vars "$prefix.\"$key\"" $file
               else
