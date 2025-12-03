@@ -23,7 +23,8 @@ jobs:
             local file=$2
             for key in $(yq "$prefix | keys | .[]" $file); do
               value=$(yq "$prefix.\"$key\"" $file)
-              if [[ "$value" =~ ^\{.*\}$ || "$value" =~ ^\[.*\]$ ]]; then
+              # Verifica se é escalar (não objeto/array)
+              if yq "$prefix.\"$key\"" $file | yq 'tag' | grep -qE '!!map|!!seq'; then
                 export_vars "$prefix.\"$key\"" $file
               else
                 env_key=$(echo "$prefix.$key" | sed 's/\./__/g; s/^\.//')
