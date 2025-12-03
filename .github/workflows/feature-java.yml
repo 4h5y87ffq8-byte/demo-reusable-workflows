@@ -16,14 +16,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Load envs from .a5x_devops
-        id: dotenv
-        uses: c-py/action-dotenv-to-setenv@v1
+      - name: Read .a5x_devops YAML
+        id: yaml_vars
+        uses: peter-murray/read-yaml@v1
         with:
-          env-file: .a5x_devops
+          file: .a5x_devops
 
-      - name: Export app.stack.version
-        run: echo "APP_VERSION=${{ env.app.stack.version }}" >> $GITHUB_ENV
+      - name: Export all YAML entries as env vars
+        run: |
+          for key in $(jq -r 'keys[]' <<< '${{ toJson(steps.yaml_vars.outputs) }}'); do
+            val=$(jq -r --arg k "$key" '.[$k]' <<< '${{ toJson(steps.yaml_vars.outputs) }}')
+            echo "${key}=${val}" >> $GITHUB_ENV
+          done
+        shell: bash
 
       - name: Set up JDK ${{ inputs.java-version }}
         uses: actions/setup-java@v4
@@ -33,7 +38,8 @@ jobs:
 
       - name: Build with Maven
         env:
-          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_STACK: ${{ env.APP_STACK }}
+          APP_STACK_VERSION: ${{ env.APP_STACK_VERSION }}
         run: mvn clean install
         # Se usar Gradle, troque o comando acima por:
         # run: ./gradlew build
@@ -41,6 +47,7 @@ jobs:
       - name: Run Maven quality checks
         working-directory: ./app
         env:
-          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_STACK: ${{ env.APP_STACK }}
+          APP_STACK_VERSION: ${{ env.APP_STACK_VERSION }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
