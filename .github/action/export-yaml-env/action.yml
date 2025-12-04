@@ -4,6 +4,10 @@ inputs:
   file:
     description: Path to the YAML file
     required: true
+  root_prefix:
+    description: Root prefix in the YAML to start exporting from
+    required: false
+    default: "."
 runs:
   using: "composite"
   steps:
@@ -22,5 +26,5 @@ runs:
             fi
           done
         }
-        export_vars '.' "${{ inputs.file }}"
+        export_vars '${{ inputs.root_prefix }}' "${{ inputs.file }}"
       shell: bash

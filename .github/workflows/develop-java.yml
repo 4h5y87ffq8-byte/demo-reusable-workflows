@@ -16,6 +16,7 @@ jobs:
         uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
         with:
           file: .a5x_devops
+          root_prefix: .a5x_devops
 
       - name: 💾 Cache Maven dependencies
         uses: actions/cache@v4
