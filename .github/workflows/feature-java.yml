@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 📥 Export YAML entries as env vars
-        uses: demo-reusable-workflows/.github/action/export-yaml-env@main
+        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
         with:
           file: .a5x_devops
 
