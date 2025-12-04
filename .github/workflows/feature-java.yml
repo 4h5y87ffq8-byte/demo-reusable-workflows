@@ -1,15 +1,11 @@
-name: Build Java Feature Branch
+name: Java Feature Workflow
 
 on:
   workflow_call:
-    inputs:
-      java-version:
-        required: false
-        type: string
-        default: '17'
 
 jobs:
   build:
+    name: 🚀 Java Feature Build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/feature/')
     steps:
