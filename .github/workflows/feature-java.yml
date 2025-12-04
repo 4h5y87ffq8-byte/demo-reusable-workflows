@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/feature/')
     steps:
-      - name: Checkout code
+      - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
-      - name: Export YAML entries as env vars
+      - name: 📥 Export YAML entries as env vars
         run: |
           export_vars() {
             local prefix=$1
@@ -27,7 +27,6 @@ jobs:
               if yq "$prefix.\"$clean_key\"" $file | yq 'tag' | grep -qE '!!map|!!seq'; then
                 export_vars "$prefix.\"$clean_key\"" $file
               else
-                # Converte pontos em duplo underscore, hífens em underscore, remove aspas
                 env_key=$(echo "$prefix.$clean_key" | sed 's/^\.\?//; s/\./__/g; s/-/_/g; s/"//g')
                 echo "${env_key}=${value}" >> $GITHUB_ENV
               fi
@@ -36,17 +35,26 @@ jobs:
           export_vars '.a5x_devops' .a5x_devops
         shell: bash
 
-      - name: Set up JDK ${{ env.a5x_devops__build__stack_version }}
+      - name: 💾 Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
-      - name: Build with Maven
+      - name: 🏗️ Build with Maven
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn clean install
 
-      - name: Run Maven quality checks
+      - name: ✅ Run Maven quality checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
