@@ -1,13 +1,13 @@
-name: Java Feature Workflow
+name: 🚧 Java Develop Workflow
 
 on:
   workflow_call:
 
 jobs:
-  build:
-    name: 🚀 Java Feature Build
+  build-test-publish:
+    name: 🏗️ Build, Test & Publish
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/feature/')
+    if: startsWith(github.ref, 'refs/heads/develop')
     steps:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
@@ -36,7 +36,23 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn clean install
 
-      - name: ✅ Run Maven quality checks
+      - name: 🧪 Run Unit Tests
         working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: mvn test
+
+      - name: 📦 Publish Artifact to Nexus
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: mvn deploy -DskipTests
+
+      - name: 🔎 Run SonarQube Analysis
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
+          mvn sonar:sonar \
+            -Dsonar.projectKey=${{ env.a5x_devops__build__project_key }} \
+            -Dsonar.host.url=${{ env.a5x_devops__build__sonar_host_url }} \
+            -Dsonar.login=$SONAR_TOKEN
