@@ -11,6 +11,15 @@ jobs:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
+      - name: 🔑 Print token presence
+        run: |
+          if [ -z "${{ secrets.TOKEN }}" ]; then
+            echo "TOKEN is NOT available in this repository."
+            exit 1
+          else
+            echo "TOKEN is available in this repository."
+          fi
+
       - name: 🔀 Create Pull Request to develop
         uses: peter-evans/create-pull-request@v6
         with:
