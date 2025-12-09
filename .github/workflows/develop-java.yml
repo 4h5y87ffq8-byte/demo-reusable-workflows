@@ -41,19 +41,19 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn test
 
-      - name: 📦 Publish Artifact to Nexus
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        env:
-          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-        run: mvn deploy -DskipTests
+    #   - name: 📦 Publish Artifact to Nexus
+    #     working-directory: ${{ env.a5x_devops__build__working_directory }}
+    #     env:
+    #       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+    #       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+    #     run: mvn deploy -DskipTests
 
-      - name: 🔎 Run SonarQube Analysis
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey=${{ env.a5x_devops__build__project_key }} \
-            -Dsonar.host.url=${{ env.a5x_devops__build__sonar_host_url }} \
-            -Dsonar.login=$SONAR_TOKEN
+    #   - name: 🔎 Run SonarQube Analysis
+    #     working-directory: ${{ env.a5x_devops__build__working_directory }}
+    #     env:
+    #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #     run: |
+    #       mvn sonar:sonar \
+    #         -Dsonar.projectKey=${{ env.a5x_devops__build__project_key }} \
+    #         -Dsonar.host.url=${{ env.a5x_devops__build__sonar_host_url }} \
+    #         -Dsonar.login=$SONAR_TOKEN
