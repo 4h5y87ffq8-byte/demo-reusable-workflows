@@ -20,6 +20,7 @@ jobs:
           title: 'Auto PR: ${{ github.ref_name }} → develop'
           body: |
             PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
+            ⚠️ Se você receber erro 403, verifique se o usuário/Token tem permissão de escrita no repositório de destino.
           draft: false
+          push-to-fork: false
 
-          
