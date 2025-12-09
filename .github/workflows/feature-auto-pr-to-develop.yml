@@ -14,13 +14,12 @@ jobs:
       - name: 🔀 Create Pull Request to develop
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           base: develop
           branch: ${{ github.ref_name }}
           title: 'Auto PR: ${{ github.ref_name }} → develop'
           body: |
             PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
-            ⚠️ Se você receber erro 403, verifique se o usuário/Token tem permissão de escrita no repositório de destino.
           draft: false
-          push-to-fork: false
 
+          
