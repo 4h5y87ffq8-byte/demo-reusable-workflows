@@ -41,3 +41,8 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
+
+  auto-pr:
+    needs: build
+    uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
+    secrets: inherit

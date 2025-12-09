@@ -1,0 +1,23 @@
+name: 🚀 Auto PR to Develop
+
+on:
+  workflow_call:
+
+jobs:
+  create-pr-to-develop:
+    name: 🔀 Create PR to Develop
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔀 Create Pull Request to develop
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: develop
+          branch: ${{ github.ref_name }}
+          title: 'Auto PR: ${{ github.ref_name }} → develop'
+          body: |
+            PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
+          draft: false
