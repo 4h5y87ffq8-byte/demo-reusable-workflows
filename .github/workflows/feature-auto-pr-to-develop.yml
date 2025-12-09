@@ -7,7 +7,6 @@ jobs:
   create-pr-to-develop:
     name: 🔀 Create PR to Develop
     runs-on: ubuntu-latest
-    secrets: inherit
     steps:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
