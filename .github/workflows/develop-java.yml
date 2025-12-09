@@ -7,6 +7,7 @@ jobs:
   build-test-publish:
     name: 🏗️ Build, Test & Publish
     runs-on: ubuntu-latest
+    secrets: inherit
     steps:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
@@ -29,7 +30,7 @@ jobs:
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
       - name: 🏗️ Build with Maven

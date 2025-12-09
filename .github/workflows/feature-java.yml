@@ -7,6 +7,7 @@ jobs:
   build:
     name: 🚀 Java Feature Build
     runs-on: ubuntu-latest
+    secrets: inherit
     if: startsWith(github.ref, 'refs/heads/feature/')
     steps:
       - name: 🛎️ Checkout code
