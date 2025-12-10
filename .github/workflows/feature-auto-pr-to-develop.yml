@@ -29,14 +29,9 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
           base: develop
-          branch: ${{ github.ref_name }}
+          head: ${{ github.ref_name }}
           title: "Auto PR: ${{ github.ref_name }} → develop"
           body: |
             PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
           draft: false
-          push-to-fork: false
-          commit-message: "[create-pull-request] automated change"
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: mandico <43236302+mandico@users.noreply.github.com>
-          signoff: false
           delete-branch: false
