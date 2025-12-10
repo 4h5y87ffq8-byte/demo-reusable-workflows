@@ -25,13 +25,22 @@ jobs:
           fi
 
       - name: 🔀 Create Pull Request to develop
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.TOKEN }}
-          base: develop
-          head: ${{ github.ref_name }}
-          title: "Auto PR: ${{ github.ref_name }} → develop"
-          body: |
-            PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
-          draft: false
-          delete-branch: false
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          # Verificar se já existe um PR aberto da branch atual para develop
+          existing_pr=$(gh pr list --head ${{ github.ref_name }} --base develop --json number --jq '.[0].number' || echo "")
+
+          if [ -n "$existing_pr" ]; then
+            echo "✅ PR já existe: #$existing_pr"
+            gh pr view $existing_pr
+          else
+            # Criar novo PR
+            gh pr create \
+              --base develop \
+              --head ${{ github.ref_name }} \
+              --title "Auto PR: ${{ github.ref_name }} → develop" \
+              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`." \
+              --assignee @me
+            echo "✅ PR criado com sucesso!"
+          fi
