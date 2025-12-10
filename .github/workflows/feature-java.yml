@@ -29,7 +29,7 @@ jobs:
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
       - name: 🏗️ Build with Maven
@@ -44,3 +44,4 @@ jobs:
   auto-pr:
     needs: build
     uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
+    secrets: inherit
