@@ -2,6 +2,10 @@ name: 🚀 Auto PR to Develop
 
 on:
   workflow_call:
+    secrets:
+      TOKEN:
+        description: "GitHub token for creating pull requests"
+        required: true
 
 jobs:
   create-pr-to-develop:
@@ -11,8 +15,14 @@ jobs:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
-      - name: Print secret (should be empty for security)
-        run: echo "${{ secrets.TOKEN }}"
+      - name: 🔍 Validate TOKEN secret
+        run: |
+          if [ -z "${{ secrets.TOKEN }}" ]; then
+            echo "❌ TOKEN secret is not available"
+            exit 1
+          else
+            echo "✅ TOKEN secret is available"
+          fi
 
       - name: 🔀 Create Pull Request to develop
         uses: peter-evans/create-pull-request@v6
@@ -20,14 +30,13 @@ jobs:
           token: ${{ secrets.TOKEN }}
           base: develop
           branch: ${{ github.ref_name }}
-          title: 'Auto PR: ${{ github.ref_name }} → develop'
+          title: "Auto PR: ${{ github.ref_name }} → develop"
           body: |
             PR automático criado pelo workflow após build bem-sucedido da branch `${{ github.ref_name }}`.
           draft: false
           push-to-fork: false
-          commit-message: '[create-pull-request] automated change'
+          commit-message: "[create-pull-request] automated change"
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           author: mandico <43236302+mandico@users.noreply.github.com>
           signoff: false
           delete-branch: false
-
