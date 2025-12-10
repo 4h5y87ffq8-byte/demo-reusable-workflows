@@ -32,8 +32,19 @@ jobs:
           existing_pr=$(gh pr list --head ${{ github.ref_name }} --base develop --json number --jq '.[0].number' || echo "")
 
           if [ -n "$existing_pr" ]; then
-            echo "✅ PR já existe: #$existing_pr"
-            gh pr view $existing_pr
+            echo "✅ PR já existe: #$existing_pr - Atualizando..."
+            
+            # Atualizar título e body do PR existente
+            gh pr edit $existing_pr \
+              --title "Auto PR: ${{ github.ref_name }} → develop (Build #${{ github.run_number }})" \
+              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`.
+
+            **🔄 Última atualização:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            **📦 Build:** #${{ github.run_number }}
+            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **📝 Commit:** \`${{ github.sha }}\`"
+            
+            echo "✅ PR #$existing_pr atualizado com sucesso!"
           else
             # Criar novo PR
             gh pr create \
