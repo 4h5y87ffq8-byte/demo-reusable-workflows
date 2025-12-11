@@ -43,6 +43,7 @@ jobs:
   publish-deploy:
     name: 🏗️ Publish & Deploy
     runs-on: ubuntu-latest
+    needs: build-tests
     steps:
       - name: 🔐 AWS Authentication ECR
         id: aws-auth-ecr
