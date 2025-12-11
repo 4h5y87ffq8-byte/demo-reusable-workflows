@@ -41,7 +41,7 @@ jobs:
         run: mvn test
 
   publish-deploy:
-    name: 🏗️ Publish & Deploy
+    name: 🚀 Publish & Deploy
     runs-on: ubuntu-latest
     needs: build-tests
     steps:
