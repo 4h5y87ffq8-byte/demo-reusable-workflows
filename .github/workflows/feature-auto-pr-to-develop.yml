@@ -51,7 +51,12 @@ jobs:
               --base develop \
               --head ${{ github.ref_name }} \
               --title "Auto PR: ${{ github.ref_name }} → develop" \
-              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`." \
+              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`.
+
+            **🔄 Última atualização:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            **📦 Build:** #${{ github.run_number }}
+            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **📝 Commit:** \`${{ github.sha }}\`"
               --assignee @me
             echo "✅ PR criado com sucesso!"
           fi
