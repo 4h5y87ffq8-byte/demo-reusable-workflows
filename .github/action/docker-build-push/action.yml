@@ -1,0 +1,30 @@
+name: 'Docker Build & Push'
+description: 'Builds and pushes a Docker image to a registry'
+inputs:
+  working-directory:
+    description: 'Directory containing the Dockerfile'
+    required: true
+  image-name:
+    description: 'Docker image name'
+    required: true
+  repository:
+    description: 'ECR repository name'
+    required: true
+  registry:
+    description: 'ECR registry URL'
+    required: true
+  tag:
+    description: 'Image tag'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ inputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }} -f ${{ inputs.working-directory }}/Dockerfile ${{ inputs.working-directory }}
+      shell: bash
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ inputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }}
+      shell: bash
