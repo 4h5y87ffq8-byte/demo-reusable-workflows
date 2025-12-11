@@ -4,8 +4,8 @@ on:
   workflow_call:
 
 jobs:
-  build-test-publish:
-    name: 🏗️ Build, Test & Publish
+  build-tests:
+    name: 🏗️ Build & Tests
     runs-on: ubuntu-latest
     steps:
       - name: 🛎️ Checkout code
@@ -40,6 +40,10 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn test
 
+  publish-deploy:
+    name: 🏗️ Publish & Deploy
+    runs-on: ubuntu-latest
+    steps:
       - name: 🔐 AWS Authentication ECR
         id: aws-auth-ecr
         uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/aws-auth-ecr@main
