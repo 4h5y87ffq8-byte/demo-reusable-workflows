@@ -19,27 +19,48 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
+          # Template do PR (centralizado no workflow)
+          PR_TEMPLATE=$(cat << 'EOF'
+          ## 📝 Resumo
+          
+          PR automático criado após build bem-sucedido da branch `${{ github.ref_name }}`.
+          
+          ## 🔄 Informações do Build
+          
+          - **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **📦 Build:** #${{ github.run_number }}
+          - **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - **📝 Commit:** `${{ github.sha }}`
+          - **👤 Autor:** @${{ github.actor }}
+          
+          ## ✅ Checklist
+          
+          - [x] Build passou com sucesso
+          - [x] Testes executados
+          - [ ] Code review necessário
+          - [ ] Aprovação para merge
+          
+          ---
+          
+          **⚠️ Atenção:** Este PR foi gerado automaticamente. Revise as mudanças antes de fazer merge.
+          EOF
+          )
+          
           # Verificar se já existe um PR aberto da branch atual para develop
           existing_pr=$(gh pr list --head ${{ github.ref_name }} --base develop --json number --jq '.[0].number' || echo "")
 
           if [ -n "$existing_pr" ]; then
             echo "✅ PR já existe: #$existing_pr - Atualizando e adicionando comentário..."
             
-            # Atualizar título e body do PR existente
+            # Atualizar título do PR existente (mantém o body original)
             gh pr edit $existing_pr \
-              --title "Auto PR: ${{ github.ref_name }} → develop (Build #${{ github.run_number }})" \
-              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`.
-
-            **🔄 Última atualização:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-            **📦 Build:** #${{ github.run_number }}
-            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            **📝 Commit:** \`${{ github.sha }}\`"
+              --title "Auto PR: ${{ github.ref_name }} → develop (Build #${{ github.run_number }})"
             
             # Adicionar comentário incremental ao PR
             gh pr comment $existing_pr \
               --body "## 🔄 Atualização Automática
 
-            Nova build concluída com sucesso!
+            Novo build concluído com sucesso!
 
             **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
             **📦 Build:** #${{ github.run_number }}
@@ -51,17 +72,12 @@ jobs:
             
             echo "✅ PR #$existing_pr atualizado e comentário adicionado!"
           else
-            # Criar novo PR
-            gh pr create \
+            # Criar novo PR com template
+            echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
               --title "Auto PR: ${{ github.ref_name }} → develop" \
-              --body "PR automático criado pelo workflow após build bem-sucedido da branch \`${{ github.ref_name }}\`.
-
-            **🔄 Última atualização:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-            **📦 Build:** #${{ github.run_number }}
-            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            **📝 Commit:** \`${{ github.sha }}\`"
+              --body-file - \
               --assignee @me
             echo "✅ PR criado com sucesso!"
           fi
