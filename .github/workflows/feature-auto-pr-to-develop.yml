@@ -27,7 +27,7 @@ jobs:
           
           ## 🔄 Informações do Build
           
-          - **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **📅 Data/Hora:** $(TZ=America/Sao_Paulo date '+%Y-%m-%d %H:%M:%S %Z')
           - **📦 Build:** #${{ github.run_number }}
           - **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **📝 Commit:** \`${{ github.sha }}\`
@@ -63,7 +63,7 @@ jobs:
 
             Novo build concluído com sucesso!
 
-            **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            **📅 Data/Hora:** $(TZ=America/Sao_Paulo date '+%Y-%m-%d %H:%M:%S %Z')
             **📦 Build:** #${{ github.run_number }}
             **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             **📝 Commit:** \`${{ github.sha }}\`
