@@ -8,16 +8,16 @@ jobs:
     name: 🚀 Java Feature Build
     runs-on: ubuntu-latest
     steps:
-      - name: 🛎️ Checkout code
+      - name: 🛎️ Checkout Code
         uses: actions/checkout@v4
 
-      - name: 📥 Export YAML entries as env vars
+      - name: 📥 Export YAML entries as Env Vars
         uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
         with:
           file: .a5x_devops
           root_prefix: .a5x_devops
 
-      - name: 💾 Cache Maven dependencies
+      - name: 💾 Cache Maven Dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -36,7 +36,7 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn clean install
 
-      - name: ✅ Run Maven quality checks
+      - name: ✅ Run Maven Quality Checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
           mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs

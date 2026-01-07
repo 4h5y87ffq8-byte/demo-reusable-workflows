@@ -15,16 +15,7 @@ jobs:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔍 Validate TOKEN secret
-        run: |
-          if [ -z "${{ secrets.TOKEN }}" ]; then
-            echo "❌ TOKEN secret is not available"
-            exit 1
-          else
-            echo "✅ TOKEN secret is available"
-          fi
-
-      - name: 🔀 Create Pull Request to develop
+      - name: 🔀 Create Pull Request to Develop
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
