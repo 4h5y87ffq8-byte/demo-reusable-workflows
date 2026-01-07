@@ -2,6 +2,22 @@ name: 🚀 Auto PR to Develop
 
 on:
   workflow_call:
+    inputs:
+      commit_message_prefix:
+        description: 'Prefixo para a mensagem de commit (ex: feat, fix, chore)'
+        required: false
+        type: string
+        default: 'feat'
+      auto_merge:
+        description: 'Fazer merge automaticamente após criar/atualizar o PR'
+        required: false
+        type: boolean
+        default: false
+      merge_method:
+        description: 'Método de merge (squash, merge, rebase)'
+        required: false
+        type: string
+        default: 'squash'
     secrets:
       TOKEN:
         description: "GitHub token for creating pull requests"
@@ -19,42 +35,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          # Extrair o nome da branch e determinar o prefixo automaticamente
-          BRANCH_NAME="${{ github.ref_name }}"
-          
-          # Determinar prefixo baseado no padrão da branch
-          if [[ "$BRANCH_NAME" == feature/* ]]; then
-            COMMIT_PREFIX="feat"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^feature\///')
-          elif [[ "$BRANCH_NAME" == fix/* ]] || [[ "$BRANCH_NAME" == bugfix/* ]]; then
-            COMMIT_PREFIX="fix"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^fix\///' | sed 's/^bugfix\///')
-          elif [[ "$BRANCH_NAME" == hotfix/* ]]; then
-            COMMIT_PREFIX="fix"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^hotfix\///')
-          elif [[ "$BRANCH_NAME" == chore/* ]]; then
-            COMMIT_PREFIX="chore"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^chore\///')
-          elif [[ "$BRANCH_NAME" == docs/* ]]; then
-            COMMIT_PREFIX="docs"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^docs\///')
-          elif [[ "$BRANCH_NAME" == refactor/* ]]; then
-            COMMIT_PREFIX="refactor"
-            CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/^refactor\///')
-          else
-            COMMIT_PREFIX="feat"
-            CLEAN_BRANCH="$BRANCH_NAME"
-          fi
-          
-          # Mensagem de commit customizada
-          COMMIT_TITLE="$COMMIT_PREFIX: $CLEAN_BRANCH"
-          COMMIT_BODY="Merged from branch: $BRANCH_NAME
-          
-Build #${{ github.run_number }}
-Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-Commit: ${{ github.sha }}
-Author: @${{ github.actor }}"
-          
           # Template do PR (centralizado no workflow)
           PR_TEMPLATE=$(cat << EOF
           ## 📝 Resumo
@@ -79,15 +59,6 @@ Author: @${{ github.actor }}"
           ---
           
           **⚠️ Atenção:** Este PR foi gerado automaticamente. Revise as mudanças antes de fazer merge.
-          
-          ## 📋 Mensagem de Commit Sugerida
-          
-          **Título:** \`$COMMIT_TITLE\`
-          
-          **Descrição:**
-          \`\`\`
-          $COMMIT_BODY
-          \`\`\`
           EOF
           )
           
@@ -99,7 +70,7 @@ Author: @${{ github.actor }}"
             
             # Atualizar título e body do PR existente com informações atualizadas
             echo "$PR_TEMPLATE" | gh pr edit $existing_pr \
-              --title "$COMMIT_TITLE" \
+              --title "Auto PR: ${{ github.ref_name }} → develop (Build #${{ github.run_number }})" \
               --body-file -
             
             # Adicionar comentário incremental ao PR
@@ -122,7 +93,7 @@ Author: @${{ github.actor }}"
             echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
-              --title "$COMMIT_TITLE" \
+              --title "Auto PR: ${{ github.ref_name }} → develop" \
               --body-file - \
               --assignee @me
             echo "✅ PR criado com sucesso!"
