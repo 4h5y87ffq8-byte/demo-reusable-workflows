@@ -20,17 +20,17 @@ jobs:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
           # Template do PR (centralizado no workflow)
-          PR_TEMPLATE=$(cat << 'EOF'
+          PR_TEMPLATE=$(cat << EOF
           ## 📝 Resumo
           
-          PR automático criado após build bem-sucedido da branch `${{ github.ref_name }}`.
+          PR automático criado após build bem-sucedido da branch \`${{ github.ref_name }}\`.
           
           ## 🔄 Informações do Build
           
           - **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
           - **📦 Build:** #${{ github.run_number }}
           - **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          - **📝 Commit:** `${{ github.sha }}`
+          - **📝 Commit:** \`${{ github.sha }}\`
           - **👤 Autor:** @${{ github.actor }}
           
           ## ✅ Checklist
