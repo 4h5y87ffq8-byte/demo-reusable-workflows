@@ -23,7 +23,7 @@ jobs:
           existing_pr=$(gh pr list --head ${{ github.ref_name }} --base develop --json number --jq '.[0].number' || echo "")
 
           if [ -n "$existing_pr" ]; then
-            echo "✅ PR já existe: #$existing_pr - Atualizando..."
+            echo "✅ PR já existe: #$existing_pr - Atualizando e adicionando comentário..."
             
             # Atualizar título e body do PR existente
             gh pr edit $existing_pr \
@@ -35,7 +35,21 @@ jobs:
             **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             **📝 Commit:** \`${{ github.sha }}\`"
             
-            echo "✅ PR #$existing_pr atualizado com sucesso!"
+            # Adicionar comentário incremental ao PR
+            gh pr comment $existing_pr \
+              --body "## 🔄 Atualização Automática
+
+            Nova build concluída com sucesso!
+
+            **📅 Data/Hora:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            **📦 Build:** #${{ github.run_number }}
+            **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **📝 Commit:** \`${{ github.sha }}\`
+            
+            ---
+            _Comentário gerado automaticamente pelo workflow_"
+            
+            echo "✅ PR #$existing_pr atualizado e comentário adicionado!"
           else
             # Criar novo PR
             gh pr create \
