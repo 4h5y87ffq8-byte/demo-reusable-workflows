@@ -52,6 +52,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.a5x_devops__deploy__dev__region }}
+          account-id: ${{ env.a5x_devops__deploy__dev__account_id }}
 
       - name: 📝 Extract version from pom.xml
         id: version

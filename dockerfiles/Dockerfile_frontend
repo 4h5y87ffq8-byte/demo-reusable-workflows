@@ -1,0 +1,62 @@
+
+FROM debian:bookworm-slim
+
+# Defina a versão do Node que deseja via NVM (ex.: 18.20.4, 20.11.1, 22.x)
+ARG NVM_NODE_VERSION=20.11.1
+ARG USERNAME=node
+ARG UID=10001
+ARG GID=10001
+
+# Dependências para build de módulos nativos e ferramentas comuns
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+      ca-certificates curl git gnupg \
+      build-essential python3 make gcc g++ \
+    ; \
+    rm -rf /var/lib/apt/lists/*
+
+# Cria usuário não-root
+RUN set -eux; \
+    groupadd -g "${GID}" "${USERNAME}"; \
+    useradd -m -u "${UID}" -g "${GID}" -s /bin/bash "${USERNAME}"
+
+# Instala NVM (isolado no /usr/local/nvm) e Node desejado
+ENV NVM_DIR=/usr/local/nvm
+# Adiciona NVM ao PATH para todos os shells
+ENV PROFILE=/etc/profile.d/nvm.sh
+RUN set -eux; \
+    mkdir -p "${NVM_DIR}"; \
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash -s -- --no-use; \
+    # linca script de profile para shell global
+    echo "export NVM_DIR=${NVM_DIR}" > "${PROFILE}"; \
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> "${PROFILE}"; \
+    echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> "${PROFILE}"; \
+    # carrega NVM e instala Node
+    bash -lc "nvm install ${NVM_NODE_VERSION} && nvm alias default ${NVM_NODE_VERSION}"; \
+    # habilita corepack e yarn (Berry) ou instala yarn classic (escolha abaixo)
+    bash -lc "corepack enable"
+
+# --- Escolha do Yarn ---
+# Para Yarn Berry (via corepack, recomendado para projetos modernos):
+# Nada a fazer: 'corepack enable' já disponibiliza 'yarn' por versão do projeto (package.json/.yarnrc.yml)
+#
+# Para Yarn 1.x (classic) fixo global, descomente abaixo:
+# RUN bash -lc "npm i -g yarn@1.22.22"
+
+# Ajusta PATH para Node do NVM por padrão
+ENV PATH="${NVM_DIR}/versions/node/$(bash -lc 'nvm version current')/bin:${PATH}"
+
+# Diretório de trabalho
+WORKDIR /workspace
+
+# Copie apenas o que ajuda cache de dependências (opcional, em CI/CD)
+# COPY package.json yarn.lock ./
+# RUN bash -lc "yarn install --frozen-lockfile || npm ci"
+
+# Alterna para usuário não-root
+USER ${USERNAME}
+
+# Mostra versões (útil em logs de CI)
+##CMD ["/bin/bash", "-lc", "node -v && npm -v && yarn -v; exec bash"]
+CMD ["/bin/bash"]

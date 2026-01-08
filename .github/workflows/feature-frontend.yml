@@ -1,0 +1,52 @@
+name: Frontend Feature Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: 🚀 Frontend Feature Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📥 Export YAML entries as Env Vars
+        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
+        with:
+          file: .a5x_devops
+          root_prefix: .a5x_devops
+
+      - name: 💾 Cache Node Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ env.a5x_devops__build__working_directory }}/node_modules
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: 🟢 Set up Node.js ${{ env.a5x_devops__build__stack_version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.a5x_devops__build__stack_version }}
+
+      - name: 📦 Install Dependencies
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: npm ci
+
+      - name: 🏗️ Build Application
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: npm run build
+
+      - name: ✅ Run Quality Checks
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: |
+          npm run lint
+          npm run test -- --coverage --watchAll=false
+
+  auto-pr:
+    needs: build
+    uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
+    secrets: inherit

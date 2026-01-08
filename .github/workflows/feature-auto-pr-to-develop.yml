@@ -107,11 +107,17 @@ jobs:
           EOF
           )
           
-          # Verificar se já existe um PR aberto da branch atual para develop
-          existing_pr=$(gh pr list --head ${{ github.ref_name }} --base develop --json number --jq '.[0].number' || echo "")
+          echo "🔍 Verificando se já existe PR da branch '${{ github.ref_name }}' para 'develop'..."
+          
+          # Verificar se já existe um PR aberto ESPECIFICAMENTE da branch atual para develop
+          # --head filtra pela branch de origem (source branch)
+          # ✅ Branches diferentes = PRs diferentes (comportamento correto)
+          # ✅ Mesma branch com novos commits = atualiza o PR existente
+          existing_pr=$(gh pr list --head "${{ github.ref_name }}" --base develop --state open --json number --jq '.[0].number' || echo "")
 
           if [ -n "$existing_pr" ]; then
-            echo "✅ PR já existe: #$existing_pr - Atualizando e adicionando comentário..."
+            echo "♻️ PR já existe para esta branch: #$existing_pr"
+            echo "📝 Atualizando PR existente com informações do novo commit..."
             
             # Atualizar título e body do PR existente com informações atualizadas
             echo "$PR_TEMPLATE" | gh pr edit $existing_pr \
@@ -132,7 +138,8 @@ jobs:
             ---
             _Comentário gerado automaticamente pelo workflow_"
             
-            echo "✅ PR #$existing_pr atualizado e comentário adicionado!"
+            echo "✅ PR #$existing_pr atualizado com sucesso!"
+            echo "📌 URL: ${{ github.server_url }}/${{ github.repository }}/pull/$existing_pr"
             
             # Auto-merge se habilitado
             if [ "${{ inputs.auto_merge }}" = "true" ]; then
@@ -144,14 +151,19 @@ jobs:
                 --body "$COMMIT_BODY"
               echo "✅ Auto-merge habilitado!"
             fi
-          else
+          elecho "🆕 Nenhum PR encontrado para a branch '${{ github.ref_name }}'"
+            echo "📝 Criando novo PR para 'develop'..."
+            
+            se
             # Criar novo PR com template
             pr_url=$(echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
               --title "$COMMIT_TITLE" \
               --body-file - \
-              --assignee @me)
+              --assiNovo PR criado com sucesso!"
+            echo "📌 URL: $pr_url"
+            echo "🔢 Número: #$pr_number
             
             pr_number=$(echo "$pr_url" | grep -oP '\d+$')
             echo "✅ PR criado com sucesso: $pr_url"
