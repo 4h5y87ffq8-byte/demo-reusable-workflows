@@ -151,22 +151,22 @@ jobs:
                 --body "$COMMIT_BODY"
               echo "✅ Auto-merge habilitado!"
             fi
-          elecho "🆕 Nenhum PR encontrado para a branch '${{ github.ref_name }}'"
+          else
+            echo "🆕 Nenhum PR encontrado para a branch '${{ github.ref_name }}'"
             echo "📝 Criando novo PR para 'develop'..."
             
-            se
             # Criar novo PR com template
             pr_url=$(echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
               --title "$COMMIT_TITLE" \
               --body-file - \
-              --assiNovo PR criado com sucesso!"
-            echo "📌 URL: $pr_url"
-            echo "🔢 Número: #$pr_number
+              --assignee @me)
             
             pr_number=$(echo "$pr_url" | grep -oP '\d+$')
-            echo "✅ PR criado com sucesso: $pr_url"
+            echo "✅ Novo PR criado com sucesso!"
+            echo "📌 URL: $pr_url"
+            echo "🔢 Número: #$pr_number"
             
             # Auto-merge se habilitado
             if [ "${{ inputs.auto_merge }}" = "true" ]; then
