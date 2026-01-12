@@ -16,6 +16,9 @@ jobs:
         name: 🔍 Validar e Gerar Repositório
         runs-on: ubuntu-latest
         if: startsWith(github.event.issue.title, '[NEW APP]') || startsWith(github.event.issue.title, '[NEW INFRA]')
+        permissions:
+            issues: write
+            contents: read
 
         steps:
             - name: 🛎️ Checkout Code
