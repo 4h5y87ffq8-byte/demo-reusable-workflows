@@ -18,7 +18,7 @@ body:
         ⚠️ Informe **APENAS** o nome do `sistema-modulo` (sem prefixos).
 
         🔹 **O nome final será automaticamente gerado como:**  
-        `a5x-infra-<dominio>-<repo_name>`
+        `a5x-infra-<dominio>-<repo_name>-<environment>`
 
         ⚠️ **IMPORTANTE:** Use **APENAS hífens (-)** para separar palavras.  
         ❌ **NÃO use underscores (_)** ou espaços!
@@ -26,7 +26,7 @@ body:
         💡 **Exemplo:**
         - ❌ **Errado:** `lseg_risk` ou `lseg risk`
         - ✅ **Correto:** `lseg-risk`
-        - ✅ **Será criado:** `a5x-infra-pos-lseg-risk`
+        - ✅ **Será criado:** `a5x-infra-pos-lseg-risk-dev`
 
         ---
 
@@ -36,7 +36,7 @@ body:
     id: repo_name
     attributes:
       label: Nome do Repositório
-      description: Nome do repositório a ser criado (sem espaços, use hífens). O nome final é composto por a5x-infra-<dominio>-<repo_name>
+      description: Nome do repositório a ser criado (sem espaços, use hífens). O nome final é composto por a5x-infra-<dominio>-<repo_name>-<environment>
       placeholder: ex. lseg-risk
     validations:
       required: true
