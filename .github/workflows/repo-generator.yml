@@ -1,0 +1,148 @@
+name: 🤖 Gerador Automático de Repositórios
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  validate-and-generate:
+    name: 🔍 Validar e Gerar Repositório
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'new-repository')
+    
+    steps:
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Parse Issue Body
+        id: parse
+        uses: stefanbuck/github-issue-parser@v3
+        with:
+          template-path: .github/ISSUE_TEMPLATE/new-repository.yml
+
+      - name: 📝 Show Parsed Data
+        run: |
+          echo "Repository Name: ${{ steps.parse.outputs.issueparser_repo_name }}"
+          echo "Stack: ${{ steps.parse.outputs.issueparser_stack }}"
+          echo "Deployment: ${{ steps.parse.outputs.issueparser_deployment_target }}"
+          echo "Database: ${{ steps.parse.outputs.issueparser_database }}"
+          echo "CI/CD: ${{ steps.parse.outputs.issueparser_ci_cd }}"
+
+      - name: ✅ Add Initial Comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Solicitação Recebida!**
+              
+              Sua solicitação está sendo processada. O repositório será criado em breve.
+              
+              **Configurações:**
+              - 📦 Repositório: \`${{ steps.parse.outputs.issueparser_repo_name }}\`
+              - 💻 Stack: ${{ steps.parse.outputs.issueparser_stack }}
+              - 🚀 Deploy: ${{ steps.parse.outputs.issueparser_deployment_target }}
+              - 🗄️ Database: ${{ steps.parse.outputs.issueparser_database }}
+              - 🔄 CI/CD: ${{ steps.parse.outputs.issueparser_ci_cd }}
+              
+              ⏳ Status: Em processamento...`
+            });
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm install @actions/core @actions/github
+
+      - name: 🏗️ Generate Repository
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ORG_NAME: ${{ github.repository_owner }}
+          REPO_NAME: ${{ steps.parse.outputs.issueparser_repo_name }}
+          REPO_DESCRIPTION: ${{ steps.parse.outputs.issueparser_repo_description }}
+          STACK: ${{ steps.parse.outputs.issueparser_stack }}
+          DEPLOYMENT: ${{ steps.parse.outputs.issueparser_deployment_target }}
+          DATABASE: ${{ steps.parse.outputs.issueparser_database }}
+          CI_CD: ${{ steps.parse.outputs.issueparser_ci_cd }}
+          VISIBILITY: ${{ steps.parse.outputs.issueparser_visibility }}
+          FEATURES: ${{ steps.parse.outputs.issueparser_features }}
+          TEAM: ${{ steps.parse.outputs.issueparser_team }}
+        run: |
+          node .github/scripts/generate-repository.js
+
+      - name: ✅ Success Comment
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ **Repositório Criado com Sucesso!**
+              
+              Seu novo repositório está pronto para uso:
+              
+              🔗 **Link:** https://github.com/${{ github.repository_owner }}/${{ steps.parse.outputs.issueparser_repo_name }}
+              
+              **Próximos Passos:**
+              1. Clone o repositório
+              2. Configure as secrets necessárias (AWS credentials, etc)
+              3. Revise o README.md
+              4. Comece a desenvolver! 🚀
+              
+              ---
+              
+              Esta issue será fechada automaticamente em 5 minutos.`
+            });
+            
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['completed']
+            });
+
+      - name: ❌ Failure Comment
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `❌ **Erro na Criação do Repositório**
+              
+              Houve um problema ao criar o repositório. Por favor, verifique:
+              
+              - ✓ Nome do repositório é válido (sem espaços ou caracteres especiais)
+              - ✓ Repositório com esse nome já existe
+              - ✓ Permissões adequadas configuradas
+              
+              Tente novamente ou entre em contato com a equipe de DevOps.`
+            });
+            
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['error']
+            });
+
+      - name: 🔒 Close Issue After Delay
+        if: success()
+        run: |
+          sleep 300
+          gh issue close ${{ github.event.issue.number }} --comment "✅ Repositório criado e configurado. Issue fechada automaticamente."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

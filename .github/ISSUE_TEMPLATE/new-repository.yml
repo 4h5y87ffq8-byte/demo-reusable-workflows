@@ -1,0 +1,162 @@
+name: 🚀 Novo Repositório
+description: Solicitar a criação de um novo repositório a partir de templates
+title: "[NEW REPO] - "
+labels: ["new-repository", "automation"]
+assignees:
+  - octocat
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎯 Solicitação de Novo Repositório
+        
+        Preencha os campos abaixo para gerar automaticamente um novo repositório com as configurações desejadas.
+        
+        **⚠️ Importante:** Após submeter esta issue, o repositório será criado automaticamente em até 5 minutos.
+
+  - type: input
+    id: repo_name
+    attributes:
+      label: Nome do Repositório
+      description: Nome do repositório a ser criado (sem espaços, use hífens)
+      placeholder: ex. meu-novo-projeto
+    validations:
+      required: true
+
+  - type: input
+    id: repo_description
+    attributes:
+      label: Descrição
+      description: Breve descrição do repositório
+      placeholder: ex. API de gerenciamento de usuários
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stack
+    attributes:
+      label: Stack Tecnológica
+      description: Qual stack/linguagem será utilizada?
+      options:
+        - Java (Spring Boot)
+        - Node.js (Express)
+        - Python (FastAPI)
+        - .NET Core
+        - Go
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment_target
+    attributes:
+      label: Ambiente de Deploy
+      description: Onde a aplicação será deployada?
+      options:
+        - AWS ECS (Container)
+        - AWS EKS (Kubernetes)
+        - AWS Lambda (Serverless)
+        - On Premise
+        - Azure Container Instances
+        - Google Cloud Run
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Banco de Dados
+      description: Qual banco de dados será utilizado?
+      options:
+        - PostgreSQL
+        - MySQL
+        - MongoDB
+        - DynamoDB
+        - Redis
+        - Nenhum
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ci_cd
+    attributes:
+      label: Pipeline CI/CD
+      description: Qual tipo de pipeline deseja?
+      options:
+        - GitHub Actions (Completo - Feature, Develop, Release)
+        - GitHub Actions (Básico - Build e Test)
+        - Jenkins
+        - GitLab CI
+        - Não configurar
+      default: 0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: features
+    attributes:
+      label: Features Adicionais
+      description: Selecione as features que deseja incluir no repositório
+      options:
+        - label: Docker e Docker Compose
+          required: false
+        - label: Terraform (Infraestrutura como Código)
+          required: false
+        - label: SonarQube (Análise de Qualidade)
+          required: false
+        - label: OWASP Dependency Check (Segurança)
+          required: false
+        - label: Jacoco (Cobertura de Código)
+          required: false
+        - label: Pre-commit Hooks
+          required: false
+        - label: README com badges
+          required: false
+        - label: Contributing Guidelines
+          required: false
+
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Visibilidade do Repositório
+      description: O repositório será público ou privado?
+      options:
+        - Private
+        - Public
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: team
+    attributes:
+      label: Time/Squad
+      description: Nome do time ou squad responsável
+      placeholder: ex. Team Backend
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Notas Adicionais
+      description: Informações adicionais ou requisitos específicos
+      placeholder: |
+        Exemplo:
+        - Integração com sistema X
+        - Autenticação via OAuth2
+        - Rate limiting necessário
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmação
+      description: Ao submeter, você confirma que
+      options:
+        - label: Li e concordo com as políticas de criação de repositórios
+          required: true
+        - label: Tenho permissão para criar este repositório
+          required: true
