@@ -18,10 +18,14 @@ body:
         ⚠️ Informe **APENAS** o nome do `sistema-modulo` (sem prefixos).
         
         🔹 **O nome final será automaticamente gerado como:**  
-        `a5x-app-<dominio>-<seu-nome>`
+        `a5x-app-<dominio>-<repo_name>`
+        
+        � **IMPORTANTE:** Use **APENAS hífens (-)** para separar palavras.  
+        ❌ **NÃO use underscores (_)** ou espaços!
         
         💡 **Exemplo:**
-        - ✅ **Você informa:** `anteros-receiver-financial`
+        - ✅ **Correto:** `anteros-receiver-financial`
+        - ❌ **Errado:** `anteros_receiver_financial` ou `anteros receiver financial`
         - ✅ **Será criado:** `a5x-app-pos-anteros-receiver-financial`
         
         ---
