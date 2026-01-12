@@ -111,7 +111,6 @@ body:
       options:
         - Private
         - Internal
-      default: 0
     validations:
       required: true
 

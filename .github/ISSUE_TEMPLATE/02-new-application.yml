@@ -24,8 +24,8 @@ body:
         ❌ **NÃO use underscores (_)** ou espaços!
         
         💡 **Exemplo:**
-        - ✅ **Correto:** `anteros-receiver-financial`
         - ❌ **Errado:** `anteros_receiver_financial` ou `anteros receiver financial`
+        - ✅ **Correto:** `anteros-receiver-financial`
         - ✅ **Será criado:** `a5x-app-pos-anteros-receiver-financial`
         
         ---
@@ -56,6 +56,7 @@ body:
       label: Domínio da Aplicação
       description: Qual domínio da aplicação será gerenciado?
       options:
+        - Selecione...
         - CRX - Cross
         - DAT - Dados
         - POS - Post Trading
@@ -69,6 +70,7 @@ body:
       label: Stack Tecnológica
       description: Qual stack/linguagem será utilizada?
       options:
+        - Selecione...
         - Java 17
         - Node.js 24.12.0
     validations:
@@ -80,6 +82,7 @@ body:
       label: Ambiente de Deploy
       description: Onde a aplicação será deployada?
       options:
+        - Selecione...
         - AWS ECS (Container)
         - AWS EKS (Kubernetes)
         - AWS Lambda (Serverless)
@@ -93,9 +96,9 @@ body:
       label: Visibilidade do Repositório
       description: O repositório será interno ou privado?
       options:
+        - Selecione...
         - Private
         - Internal
-      default: 0
     validations:
       required: true
 
