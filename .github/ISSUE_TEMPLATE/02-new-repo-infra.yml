@@ -36,7 +36,7 @@ body:
     id: repo_name
     attributes:
       label: Nome do Repositório
-      description: Nome do repositório a ser criado (sem espaços, use hífens). O nome final é composto por a5x-infra-<dominio>-<repo_name>-<environment>
+      description: Nome do repositório a ser criado (sem espaços, use hífens).
       placeholder: ex. lseg-risk
     validations:
       required: true
