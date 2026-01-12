@@ -12,10 +12,12 @@ body:
         Preencha os campos abaixo para gerar automaticamente um repositório de aplicação com as configurações desejadas.
 
         ---
+
         **Nome do Repositório:** informe exclusivamente o nome do sistema_modulo.
         **Exemplo:** para o repositório final "a5x-app-pos-anteros-receiver-financial", informe apenas "anteros-receiver-financial".
-        ---
         
+        ---
+
         **⚠️ Importante:** Após submeter esta issue, o repositório será criado automaticamente em até 5 minutos.
 
   - type: input
