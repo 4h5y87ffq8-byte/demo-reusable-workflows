@@ -90,17 +90,29 @@ jobs:
                       const isApp = issueTitle.startsWith('[NEW APP]');
                       const isInfra = issueTitle.startsWith('[NEW INFRA]');
 
+                      // Construir nome completo do repositório
+                      const repoName = parsed.repo_name || 'N/A';
+                      const domain = (parsed.domain || '').split(' - ')[0].toLowerCase();
+                      let fullRepoName = repoName;
+
+                      if (isApp) {
+                        fullRepoName = `a5x-app-${domain}-${repoName}`;
+                      } else if (isInfra) {
+                        const env = (parsed.environment || '').split(' ')[0].toLowerCase();
+                        fullRepoName = `a5x-infra-${domain}-${repoName}-${env}`;
+                      }
+
                       let config = '';
                       if (isApp) {
                         config = `
-                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
+                        - 📦 Repositório: \`${fullRepoName}\`
                         - 🏢 Domínio: ${parsed.domain || 'N/A'}
                         - 💻 Stack: ${parsed.stack || 'N/A'}
                         - 🚀 Deploy: ${parsed.deployment_target || 'N/A'}
                         - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
                       } else if (isInfra) {
                         config = `
-                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
+                        - 📦 Repositório: \`${fullRepoName}\`
                         - 🏢 Domínio: ${parsed.domain || 'N/A'}
                         - 🌍 Ambiente: ${parsed.environment || 'N/A'}
                         - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
