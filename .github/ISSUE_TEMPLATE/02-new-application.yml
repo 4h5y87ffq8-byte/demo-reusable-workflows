@@ -1,6 +1,6 @@
 name: 🏗️ Novo Repositório - Aplicação
 description: Criar repositório para aplicação (API, Frontend, Backend, etc)
-title: "[NEW APP] - ${{inputs.repo_name}} - ${{inputs.stack}} - ${{inputs.deployment_target}}"
+title: "[NEW APP] - "
 labels: ["new-repository", "automation", "application"]
 
 body:
@@ -56,7 +56,6 @@ body:
       label: Domínio da Aplicação
       description: Qual domínio da aplicação será gerenciado?
       options:
-        - Selecione...
         - CRX - Cross
         - DAT - Dados
         - POS - Post Trading
@@ -70,7 +69,6 @@ body:
       label: Stack Tecnológica
       description: Qual stack/linguagem será utilizada?
       options:
-        - Selecione...
         - Java 17
         - Node.js 24.12.0
     validations:
@@ -82,7 +80,6 @@ body:
       label: Ambiente de Deploy
       description: Onde a aplicação será deployada?
       options:
-        - Selecione...
         - AWS ECS (Container)
         - AWS EKS (Kubernetes)
         - AWS Lambda (Serverless)
@@ -96,7 +93,6 @@ body:
       label: Visibilidade do Repositório
       description: O repositório será interno ou privado?
       options:
-        - Selecione...
         - Private
         - Internal
     validations:
