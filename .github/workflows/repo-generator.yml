@@ -15,7 +15,7 @@ jobs:
     validate-and-generate:
         name: 🔍 Validar e Gerar Repositório
         runs-on: ubuntu-latest
-        if: contains(github.event.issue.labels.*.name, 'new-repository')
+        if: startsWith(github.event.issue.title, '[NEW APP]') || startsWith(github.event.issue.title, '[NEW INFRA]')
 
         steps:
             - name: 🛎️ Checkout Code
@@ -32,10 +32,10 @@ jobs:
                   script: |
                       const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
 
-                      // Detectar tipo de issue pela label
-                      const labels = context.payload.issue.labels.map(l => l.name);
-                      const isApp = labels.includes('application');
-                      const isInfra = labels.includes('infrastructure');
+                      // Detectar tipo de issue pelo título
+                      const issueTitle = context.payload.issue.title;
+                      const isApp = issueTitle.startsWith('[NEW APP]');
+                      const isInfra = issueTitle.startsWith('[NEW INFRA]');
 
                       let newTitle = '';
 
@@ -86,9 +86,9 @@ jobs:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
                       const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
-                      const labels = context.payload.issue.labels.map(l => l.name);
-                      const isApp = labels.includes('application');
-                      const isInfra = labels.includes('infrastructure');
+                      const issueTitle = context.payload.issue.title;
+                      const isApp = issueTitle.startsWith('[NEW APP]');
+                      const isInfra = issueTitle.startsWith('[NEW INFRA]');
 
                       let config = '';
                       if (isApp) {
@@ -122,14 +122,14 @@ jobs:
             - name: 🎯 Determine Template
               id: template
               run: |
-                  LABELS='${{ toJson(github.event.issue.labels.*.name) }}'
+                  ISSUE_TITLE='${{ github.event.issue.title }}'
                   PARSED='${{ steps.parse.outputs.jsonString }}'
 
+                  echo "Issue title: $ISSUE_TITLE"
                   echo "Parsed data: $PARSED"
-                  echo "Labels: $LABELS"
 
-                  # Detectar tipo
-                  if echo "$LABELS" | grep -q "application"; then
+                  # Detectar tipo pelo título
+                  if [[ "$ISSUE_TITLE" == "[NEW APP]"* ]]; then
                     STACK=$(echo "$PARSED" | jq -r '.stack // empty')
                     echo "Stack detected: $STACK"
                     
@@ -153,7 +153,7 @@ jobs:
                     echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
                     echo "repo_type=application" >> $GITHUB_OUTPUT
                     
-                  elif echo "$LABELS" | grep -q "infrastructure"; then
+                  elif [[ "$ISSUE_TITLE" == "[NEW INFRA]"* ]]; then
                     INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // empty')
                     echo "Infra type detected: $INFRA_TYPE"
                     
@@ -171,7 +171,7 @@ jobs:
                     echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
                     echo "repo_type=infrastructure" >> $GITHUB_OUTPUT
                   else
-                    echo "❌ Tipo de repositório não identificado"
+                    echo "❌ Tipo de repositório não identificado no título"
                     exit 1
                   fi
 

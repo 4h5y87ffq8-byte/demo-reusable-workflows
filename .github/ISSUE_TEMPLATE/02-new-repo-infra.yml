@@ -1,7 +1,6 @@
 name: 🏗️ Novo Repositório - Infraestrutura
 description: Criar repositório para infraestrutura (Terraform, IaC, etc)
 title: "[NEW INFRA] - "
-labels: ["new-repository", "automation", "infrastructure"]
 
 body:
   - type: markdown
