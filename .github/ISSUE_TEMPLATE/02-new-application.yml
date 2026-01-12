@@ -1,6 +1,6 @@
 name: 🏗️ Novo Repositório - Aplicação
 description: Criar repositório para aplicação (API, Frontend, Backend, etc)
-title: "[NEW APP] - "
+title: "[NEW APP] - ${{inputs.repo_name}} - ${{inputs.stack}} - ${{inputs.deployment_target}}"
 labels: ["new-repository", "automation", "application"]
 
 body:
