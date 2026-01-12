@@ -13,8 +13,16 @@ body:
 
         ---
 
-        **Nome do Repositório:** informe exclusivamente o nome do sistema_modulo.
-        **Exemplo:** para o repositório final "a5x-app-pos-anteros-receiver-financial", informe apenas "anteros-receiver-financial".
+        ### 📝 **ATENÇÃO - Nome do Repositório**
+        
+        ⚠️ Informe **APENAS** o nome do `sistema-modulo` (sem prefixos).
+        
+        🔹 **O nome final será automaticamente gerado como:**  
+        `a5x-app-<dominio>-<seu-nome>`
+        
+        💡 **Exemplo:**
+        - ✅ **Você informa:** `anteros-receiver-financial`
+        - ✅ **Será criado:** `a5x-app-pos-anteros-receiver-financial`
         
         ---
 
