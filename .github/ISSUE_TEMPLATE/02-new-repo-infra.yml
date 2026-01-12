@@ -1,0 +1,86 @@
+name: 🏗️ Novo Repositório - Infraestrutura
+description: Criar repositório para infraestrutura (Terraform, IaC, etc)
+title: "[NEW INFRA] - "
+labels: ["new-repository", "automation", "infrastructure"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🎯 Solicitação de Novo Repositório - Infraestrutura
+
+        Preencha os campos abaixo para gerar automaticamente um repositório de infraestrutura com as configurações desejadas.
+
+        ---
+
+        ### 📝 **ATENÇÃO - Nome do Repositório**
+
+        ⚠️ Informe **APENAS** o nome do `sistema-modulo` (sem prefixos).
+
+        🔹 **O nome final será automaticamente gerado como:**  
+        `a5x-infra-<dominio>-<repo_name>`
+
+        ⚠️ **IMPORTANTE:** Use **APENAS hífens (-)** para separar palavras.  
+        ❌ **NÃO use underscores (_)** ou espaços!
+
+        💡 **Exemplo:**
+        - ❌ **Errado:** `lseg_risk` ou `lseg risk`
+        - ✅ **Correto:** `lseg-risk`
+        - ✅ **Será criado:** `a5x-infra-pos-lseg-risk`
+
+        ---
+
+        **⚠️ Importante:** Após submeter esta issue, o repositório será criado automaticamente em até 5 minutos.
+
+  - type: input
+    id: repo_name
+    attributes:
+      label: Nome do Repositório
+      description: Nome do repositório a ser criado (sem espaços, use hífens). O nome final é composto por a5x-infra-<dominio>-<repo_name>
+      placeholder: ex. lseg-risk
+    validations:
+      required: true
+
+  - type: input
+    id: repo_description
+    attributes:
+      label: Descrição
+      description: Breve descrição do repositório
+      placeholder: ex. Infraestrutura Terraform para cluster EKS de produção
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Para qual ambiente é a infraestrutura?
+      options:
+        - DEV
+        - QAF
+        - QAN
+        - UAT
+        - CER
+        - PRD
+    validations:
+      required: true
+
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Visibilidade do Repositório
+      description: O repositório será interno ou privado?
+      options:
+        - Private
+        - Internal
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmação
+      description: Ao submeter, você confirma que
+      options:
+        - label: Li e concordo com as políticas de criação de repositórios
+          required: true

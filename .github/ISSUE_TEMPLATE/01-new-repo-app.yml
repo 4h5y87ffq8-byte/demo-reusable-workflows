@@ -1,4 +1,4 @@
-name: 🏗️ Novo Repositório - Aplicação
+name: 🚀 Novo Repositório - Aplicação
 description: Criar repositório para aplicação (API, Frontend, Backend, etc)
 title: "[NEW APP] - "
 labels: ["new-repository", "automation", "application"]
@@ -20,7 +20,7 @@ body:
         🔹 **O nome final será automaticamente gerado como:**  
         `a5x-app-<dominio>-<repo_name>`
         
-        � **IMPORTANTE:** Use **APENAS hífens (-)** para separar palavras.  
+        ⚠️ **IMPORTANTE:** Use **APENAS hífens (-)** para separar palavras.  
         ❌ **NÃO use underscores (_)** ou espaços!
         
         💡 **Exemplo:**
