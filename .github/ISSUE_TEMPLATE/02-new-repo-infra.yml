@@ -51,6 +51,19 @@ body:
       required: true
 
   - type: dropdown
+    id: domain
+    attributes:
+      label: Domínio da Aplicação
+      description: Qual domínio da aplicação será gerenciado?
+      options:
+        - CRX - Cross
+        - DAT - Dados
+        - POS - Post Trading
+        - TRD - Trading
+    validations:
+      required: true
+
+  - type: dropdown
     id: environment
     attributes:
       label: Ambiente
