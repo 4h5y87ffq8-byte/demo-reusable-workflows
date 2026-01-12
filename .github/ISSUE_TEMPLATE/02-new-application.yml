@@ -10,6 +10,9 @@ body:
         ## 🎯 Solicitação de Novo Repositório - Aplicação
         
         Preencha os campos abaixo para gerar automaticamente um repositório de aplicação com as configurações desejadas.
+
+        Nome do Repositório: informe exclusivamente o nome do sistema_modulo.
+        Exemplo: para o repositório final "a5x-app-pos-anteros-receiver-financial", informe apenas "anteros-receiver-financial".
         
         **⚠️ Importante:** Após submeter esta issue, o repositório será criado automaticamente em até 5 minutos.
 
@@ -17,8 +20,8 @@ body:
     id: repo_name
     attributes:
       label: Nome do Repositório
-      description: Nome do repositório a ser criado (sem espaços, use hífens)
-      placeholder: ex. meu-servico-api
+      description: Nome do repositório a ser criado (sem espaços, use hífens). O nome final é composto por a5x-app-<dominio>-<repo_name>
+      placeholder: ex. anteros-receiver-financial
     validations:
       required: true
 
@@ -28,6 +31,19 @@ body:
       label: Descrição
       description: Breve descrição do repositório
       placeholder: ex. API REST para gerenciamento de usuários
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domínio da Aplicação
+      description: Qual domínio da aplicação será gerenciado?
+      options:
+        - CRX - Cross
+        - DAT - Dados
+        - POS - Post Trading
+        - TRD - Trading
     validations:
       required: true
 
@@ -74,6 +90,4 @@ body:
       description: Ao submeter, você confirma que
       options:
         - label: Li e concordo com as políticas de criação de repositórios
-          required: true
-        - label: Tenho permissão para criar este repositório
           required: true
