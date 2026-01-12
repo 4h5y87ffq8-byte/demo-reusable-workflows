@@ -53,15 +53,15 @@ jobs:
                       let newTitle = '';
 
                       if (isApp) {
-                        const repoName = parsed.repo_name || parsed.repoName || 'unknown';
-                        const stack = parsed.stack || 'unknown';
-                        const deployment = parsed.deployment_target || parsed.deploymentTarget || 'unknown';
+                        const repoName = parsed.nome_do_repositrio || 'unknown';
+                        const stack = parsed.stack_tecnolgica || 'unknown';
+                        const deployment = parsed.ambiente_de_deploy || 'unknown';
                         newTitle = `[NEW APP] - ${repoName} - ${stack} - ${deployment}`;
                       } else if (isInfra) {
-                        const repoName = parsed.repo_name || parsed.repoName || 'unknown';
-                        const infraType = parsed.infra_type || parsed.infraType || 'unknown';
-                        const environment = parsed.environment || 'unknown';
-                        newTitle = `[NEW INFRA] - ${repoName} - ${infraType} - ${environment}`;
+                        const repoName = parsed.nome_do_repositrio || 'unknown';
+                        const domain = parsed.domnio_da_infraestrutura || 'unknown';
+                        const environment = parsed.ambiente || 'unknown';
+                        newTitle = `[NEW INFRA] - ${repoName} - ${domain} - ${environment}`;
                       }
 
                       if (newTitle) {
@@ -106,17 +106,17 @@ jobs:
                       let config = '';
                       if (isApp) {
                         config = `
-                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
-                        - 🏢 Domínio: ${parsed.domain || 'N/A'}
-                        - 💻 Stack: ${parsed.stack || 'N/A'}
-                        - 🚀 Deploy: ${parsed.deployment_target || 'N/A'}
-                        - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
+                        - 📦 Repositório: \`${parsed.nome_do_repositrio || 'N/A'}\`
+                        - 🏢 Domínio: ${parsed.domnio_da_aplicao || 'N/A'}
+                        - 💻 Stack: ${parsed.stack_tecnolgica || 'N/A'}
+                        - 🚀 Deploy: ${parsed.ambiente_de_deploy || 'N/A'}
+                        - 👁️ Visibilidade: ${parsed.visibilidade_do_repositrio || 'N/A'}`;
                       } else if (isInfra) {
                         config = `
-                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
-                        - 🏗️ Tipo: ${parsed.infra_type || 'N/A'}
-                        - 🌍 Ambiente: ${parsed.environment || 'N/A'}
-                        - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
+                        - 📦 Repositório: \`${parsed.nome_do_repositrio || 'N/A'}\`
+                        - 🏢 Domínio: ${parsed.domnio_da_infraestrutura || 'N/A'}
+                        - 🌍 Ambiente: ${parsed.ambiente || 'N/A'}
+                        - 👁️ Visibilidade: ${parsed.visibilidade_do_repositrio || 'N/A'}`;
                       }
 
                       await github.rest.issues.createComment({
@@ -143,7 +143,7 @@ jobs:
 
                   # Detectar tipo pelo título
                   if [[ "$ISSUE_TITLE" == "[NEW APP]"* ]]; then
-                    STACK=$(echo "$PARSED" | jq -r '.stack // empty')
+                    STACK=$(echo "$PARSED" | jq -r '.stack_tecnolgica // empty')
                     echo "Stack detected: $STACK"
                     
                     case "$STACK" in
@@ -160,27 +160,21 @@ jobs:
                     esac
                     
                     # Construir nome completo do repo
-                    DOMAIN=$(echo "$PARSED" | jq -r '.domain // empty' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
-                    REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domnio_da_aplicao // empty' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    REPO_NAME=$(echo "$PARSED" | jq -r '.nome_do_repositrio // empty')
                     FULL_NAME="a5x-app-${DOMAIN}-${REPO_NAME}"
                     echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
                     echo "repo_type=application" >> $GITHUB_OUTPUT
                     
                   elif [[ "$ISSUE_TITLE" == "[NEW INFRA]"* ]]; then
-                    INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // empty')
-                    echo "Infra type detected: $INFRA_TYPE"
-                    
-                    if echo "$INFRA_TYPE" | grep -q "Terraform"; then
-                      echo "template_repo=${{ env.TEMPLATE_TERRAFORM_AWS }}" >> $GITHUB_OUTPUT
-                    else
-                      echo "❌ Tipo de infraestrutura não suportado: $INFRA_TYPE"
-                      exit 1
-                    fi
+                    # Infraestrutura sempre usa Terraform AWS
+                    echo "template_repo=${{ env.TEMPLATE_TERRAFORM_AWS }}" >> $GITHUB_OUTPUT
                     
                     # Construir nome completo do repo
-                    REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
-                    ENV=$(echo "$PARSED" | jq -r '.environment // empty' | awk '{print tolower($1)}')
-                    FULL_NAME="a5x-infra-${REPO_NAME}-${ENV}"
+                    REPO_NAME=$(echo "$PARSED" | jq -r '.nome_do_repositrio // empty')
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domnio_da_infraestrutura // empty' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    ENV=$(echo "$PARSED" | jq -r '.ambiente // empty' | awk '{print tolower($1)}')
+                    FULL_NAME="a5x-infra-${DOMAIN}-${REPO_NAME}-${ENV}"
                     echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
                     echo "repo_type=infrastructure" >> $GITHUB_OUTPUT
                   else
@@ -194,8 +188,9 @@ jobs:
               run: |
                   TEMPLATE="${{ env.GITHUB_ORG }}/${{ steps.template.outputs.template_repo }}"
                   REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
-                  DESCRIPTION='${{ steps.parse.outputs.issueparser_repo_description }}'
-                  VISIBILITY="${{ steps.parse.outputs.issueparser_visibility }}"
+                  PARSED='${{ steps.parse.outputs.jsonString }}'
+                  DESCRIPTION=$(echo "$PARSED" | jq -r '.descrio // ""')
+                  VISIBILITY=$(echo "$PARSED" | jq -r '.visibilidade_do_repositrio // "Private"')
 
                   echo "📦 Creating repository: $REPO_NAME"
                   echo "📋 From template: $TEMPLATE"
@@ -226,11 +221,11 @@ jobs:
                   cd "$REPO_NAME"
 
                   # Extrair dados
-                  REPO_BASENAME=$(echo "$PARSED" | jq -r '.repo_name // "unknown"')
-                  DESCRIPTION=$(echo "$PARSED" | jq -r '.repo_description // "No description"')
-                  DOMAIN=$(echo "$PARSED" | jq -r '.domain // "unknown"' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
-                  DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // "unknown"')
-                  STACK=$(echo "$PARSED" | jq -r '.stack // "unknown"')
+                  REPO_BASENAME=$(echo "$PARSED" | jq -r '.nome_do_repositrio // "unknown"')
+                  DESCRIPTION=$(echo "$PARSED" | jq -r '.descrio // "No description"')
+                  DOMAIN=$(echo "$PARSED" | jq -r '.domnio_da_aplicao // "unknown"' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                  DEPLOYMENT=$(echo "$PARSED" | jq -r '.ambiente_de_deploy // "unknown"')
+                  STACK=$(echo "$PARSED" | jq -r '.stack_tecnolgica // "unknown"')
                   TEAM=$(echo "$PARSED" | jq -r '.team // "DevOps Team"')
 
                   echo "🔄 Customizing repository..."
@@ -287,16 +282,18 @@ jobs:
                   TOPICS="a5x automated-creation"
 
                   if [ "$REPO_TYPE" = "application" ]; then
-                    STACK=$(echo "$PARSED" | jq -r '.stack // ""' | tr '[:upper:]' '[:lower:]' | tr ' .' '-')
-                    DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-                    DOMAIN=$(echo "$PARSED" | jq -r '.domain // ""' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    STACK=$(echo "$PARSED" | jq -r '.stack_tecnolgica // ""' | tr '[:upper:]' '[:lower:]' | tr ' .' '-')
+                    DEPLOYMENT=$(echo "$PARSED" | jq -r '.ambiente_de_deploy // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domnio_da_aplicao // ""' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
                     
                     TOPICS="$TOPICS application $STACK $DEPLOYMENT $DOMAIN"
                   else
-                    INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-                    ENV=$(echo "$PARSED" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+                    # Para infraestrutura, tipo é sempre Terraform
+                    INFRA_TYPE="terraform-aws"
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domnio_da_infraestrutura // ""' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    ENV=$(echo "$PARSED" | jq -r '.ambiente // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
                     
-                    TOPICS="$TOPICS infrastructure $INFRA_TYPE $ENV"
+                    TOPICS="$TOPICS infrastructure $INFRA_TYPE $DOMAIN $ENV"
                   fi
 
                   echo "Adding topics: $TOPICS"
