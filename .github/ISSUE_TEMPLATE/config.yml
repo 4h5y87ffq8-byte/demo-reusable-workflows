@@ -1,11 +1,1 @@
 blank_issues_enabled: false
-contact_links:
-  - name: 📚 Documentação
-    url: https://github.com/demo-reusable-workflows/blob/main/REPO_GENERATOR.md
-    about: Consulte a documentação completa do sistema de geração de repositórios
-  - name: 🆘 Suporte
-    url: https://github.com/demo-reusable-workflows/issues/new?labels=support
-    about: Precisa de ajuda? Entre em contato com o time DevOps
-  - name: 🐛 Bug Report (Gerador)
-    url: https://github.com/demo-reusable-workflows/issues/new?labels=bug,repo-generator
-    about: Reporte problemas com o sistema de geração de repositórios
