@@ -1,382 +1,380 @@
 name: 🤖 Gerador Automático de Repositórios
 
 on:
-  issues:
-    types: [opened, edited]
+    issues:
+        types: [opened, edited]
 
 env:
-  # Configurar sua organização e templates aqui
-  GITHUB_ORG: 'your-org'  # Alterar para sua organização
-  TEMPLATE_JAVA_17: 'template-java-17'
-  TEMPLATE_NODEJS_24: 'template-nodejs-24'
-  TEMPLATE_TERRAFORM_AWS: 'template-terraform-aws'
+    # Configurar sua organização e templates aqui
+    GITHUB_ORG: "a5x-sa"
+    TEMPLATE_JAVA_17: "template-java-17"
+    TEMPLATE_NODEJS_24: "template-nodejs-24"
+    TEMPLATE_TERRAFORM_AWS: "template-terraform-aws"
 
 jobs:
-  validate-and-generate:
-    name: 🔍 Validar e Gerar Repositório
-    runs-on: ubuntu-latest
-    if: contains(github.event.issue.labels.*.name, 'new-repository')
-    
-    steps:
-      - name: 🛎️ Checkout Code
-        uses: actions/checkout@v4
+    validate-and-generate:
+        name: 🔍 Validar e Gerar Repositório
+        runs-on: ubuntu-latest
+        if: contains(github.event.issue.labels.*.name, 'new-repository')
 
-      - name: 🔍 Parse Issue Body
-        id: parse
-        uses: stefanbuck/github-issue-parser@v3
+        steps:
+            - name: 🛎️ Checkout Code
+              uses: actions/checkout@v4
 
-      - name: 🏷️ Update Issue Title Dynamically
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
-            
-            // Detectar tipo de issue pela label
-            const labels = context.payload.issue.labels.map(l => l.name);
-            const isApp = labels.includes('application');
-            const isInfra = labels.includes('infrastructure');
-            
-            let newTitle = '';
-            
-            if (isApp) {
-              const repoName = parsed.repo_name || 'unknown';
-              const stack = parsed.stack || 'unknown';
-              const deployment = parsed.deployment_target || 'unknown';
-              newTitle = `[NEW APP] - ${repoName} - ${stack} - ${deployment}`;
-            } else if (isInfra) {
-              const repoName = parsed.repo_name || 'unknown';
-              const infraType = parsed.infra_type || 'unknown';
-              const environment = parsed.environment || 'unknown';
-              newTitle = `[NEW INFRA] - ${repoName} - ${infraType} - ${environment}`;
-            }
-            
-            if (newTitle) {
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                title: newTitle
-              });
-              console.log(`✅ Título atualizado para: ${newTitle}`);
-            }
+            - name: 🔍 Parse Issue Body
+              id: parse
+              uses: stefanbuck/github-issue-parser@v3
 
-      - name: 📝 Show Parsed Data
-        run: |
-          echo "Repository Name: ${{ steps.parse.outputs.issueparser_repo_name }}"
-          echo "Stack: ${{ steps.parse.outputs.issueparser_stack }}"
-          echo "Deployment: ${{ steps.parse.outputs.issueparser_deployment_target }}"
-          echo "Database: ${{ steps.parse.outputs.issueparser_database }}"
-          echo "CI/CD: ${{ steps.parse.outputs.issueparser_ci_cd }}"
+            - name: 🏷️ Update Issue Title Dynamically
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
 
-      - name: ✅ Add Initial Comment
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Solicitação Recebida!**
-              
-              Sua solicitação está sendo processada. O repositório será criado em breve.
-              
-      - name: ✅ Add Initial Comment
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
-            const labels = context.payload.issue.labels.map(l => l.name);
-            const isApp = labels.includes('application');
-            const isInfra = labels.includes('infrastructure');
-            
-            let config = '';
-            if (isApp) {
-              config = `
-              - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
-              - 🏢 Domínio: ${parsed.domain || 'N/A'}
-              - 💻 Stack: ${parsed.stack || 'N/A'}
-              - 🚀 Deploy: ${parsed.deployment_target || 'N/A'}
-              - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
-            } else if (isInfra) {
-              config = `
-              - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
-              - 🏗️ Tipo: ${parsed.infra_type || 'N/A'}
-              - 🌍 Ambiente: ${parsed.environment || 'N/A'}
-              - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
-            }
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Solicitação Recebida!**
-              
-              Sua solicitação está sendo processada. O repositório será criado em breve.
-              
-              **Configurações:**${config}
-              
-              ⏳ Status: Em processamento...`
-            });
+                      // Detectar tipo de issue pela label
+                      const labels = context.payload.issue.labels.map(l => l.name);
+                      const isApp = labels.includes('application');
+                      const isInfra = labels.includes('infrastructure');
 
-      - name: 🎯 Determine Template
-        id: template
-        run: |
-          LABELS='${{ toJson(github.event.issue.labels.*.name) }}'
-          PARSED='${{ steps.parse.outputs.jsonString }}'
-          
-          echo "Parsed data: $PARSED"
-          echo "Labels: $LABELS"
-          
-          # Detectar tipo
-          if echo "$LABELS" | grep -q "application"; then
-            STACK=$(echo "$PARSED" | jq -r '.stack // empty')
-            echo "Stack detected: $STACK"
-            
-            case "$STACK" in
-              "Java 17")
-                echo "template_repo=${{ env.TEMPLATE_JAVA_17 }}" >> $GITHUB_OUTPUT
-                ;;
-              "Node.js 24.12.0")
-                echo "template_repo=${{ env.TEMPLATE_NODEJS_24 }}" >> $GITHUB_OUTPUT
-                ;;
-              *)
-                echo "❌ Stack não reconhecida: $STACK"
-                exit 1
-                ;;
-            esac
-            
-            # Construir nome completo do repo
-            DOMAIN=$(echo "$PARSED" | jq -r '.domain // empty' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
-            REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
-            FULL_NAME="a5x-app-${DOMAIN}-${REPO_NAME}"
-            echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
-            echo "repo_type=application" >> $GITHUB_OUTPUT
-            
-          elif echo "$LABELS" | grep -q "infrastructure"; then
-            INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // empty')
-            echo "Infra type detected: $INFRA_TYPE"
-            
-            if echo "$INFRA_TYPE" | grep -q "Terraform"; then
-              echo "template_repo=${{ env.TEMPLATE_TERRAFORM_AWS }}" >> $GITHUB_OUTPUT
-            else
-              echo "❌ Tipo de infraestrutura não suportado: $INFRA_TYPE"
-              exit 1
-            fi
-            
-            # Construir nome completo do repo
-            REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
-            ENV=$(echo "$PARSED" | jq -r '.environment // empty' | awk '{print tolower($1)}')
-            FULL_NAME="a5x-infra-${REPO_NAME}-${ENV}"
-            echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
-            echo "repo_type=infrastructure" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Tipo de repositório não identificado"
-            exit 1
-          fi
+                      let newTitle = '';
 
-      - name: 🏗️ Create Repository from Template
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          TEMPLATE="${{ env.GITHUB_ORG }}/${{ steps.template.outputs.template_repo }}"
-          REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
-          DESCRIPTION='${{ steps.parse.outputs.issueparser_repo_description }}'
-          VISIBILITY="${{ steps.parse.outputs.issueparser_visibility }}"
-          
-          echo "📦 Creating repository: $REPO_NAME"
-          echo "📋 From template: $TEMPLATE"
-          echo "👁️ Visibility: $VISIBILITY"
-          
-          # Criar repositório a partir do template
-          if [ "$VISIBILITY" = "Private" ]; then
-            gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" \
-              --template "$TEMPLATE" \
-              --private \
-              --description "$DESCRIPTION" \
-              --clone
-          else
-            gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" \
-              --template "$TEMPLATE" \
-              --internal \
-              --description "$DESCRIPTION" \
-              --clone
-          fi
-          
-          echo "✅ Repository created successfully!"
+                      if (isApp) {
+                        const repoName = parsed.repo_name || 'unknown';
+                        const stack = parsed.stack || 'unknown';
+                        const deployment = parsed.deployment_target || 'unknown';
+                        newTitle = `[NEW APP] - ${repoName} - ${stack} - ${deployment}`;
+                      } else if (isInfra) {
+                        const repoName = parsed.repo_name || 'unknown';
+                        const infraType = parsed.infra_type || 'unknown';
+                        const environment = parsed.environment || 'unknown';
+                        newTitle = `[NEW INFRA] - ${repoName} - ${infraType} - ${environment}`;
+                      }
 
-      - name: 🔧 Customize Repository
-        run: |
-          REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
-          PARSED='${{ steps.parse.outputs.jsonString }}'
-          
-          cd "$REPO_NAME"
-          
-          # Extrair dados
-          REPO_BASENAME=$(echo "$PARSED" | jq -r '.repo_name // "unknown"')
-          DESCRIPTION=$(echo "$PARSED" | jq -r '.repo_description // "No description"')
-          DOMAIN=$(echo "$PARSED" | jq -r '.domain // "unknown"' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
-          DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // "unknown"')
-          STACK=$(echo "$PARSED" | jq -r '.stack // "unknown"')
-          TEAM=$(echo "$PARSED" | jq -r '.team // "DevOps Team"')
-          
-          echo "🔄 Customizing repository..."
-          echo "  - Name: $REPO_NAME"
-          echo "  - Domain: $DOMAIN"
-          echo "  - Deployment: $DEPLOYMENT"
-          
-          # Substituir placeholders em todos os arquivos
-          find . -type f \( -name "*.md" -o -name "*.yml" -o -name "*.yaml" -o -name "*.json" -o -name "*.xml" -o -name "*.java" -o -name "*.ts" -o -name "*.js" -o -name "Dockerfile" -o -name "docker-compose.yml" \) -exec sed -i \
-            -e "s/REPO_NAME_PLACEHOLDER/$REPO_NAME/g" \
-            -e "s/DESCRIPTION_PLACEHOLDER/$DESCRIPTION/g" \
-            -e "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" \
-            -e "s/DEPLOYMENT_PLACEHOLDER/$DEPLOYMENT/g" \
-            -e "s/TEAM_PLACEHOLDER/$TEAM/g" \
-            -e "s/OWNER_PLACEHOLDER/${{ env.GITHUB_ORG }}/g" \
-            {} +
-          
-          # Renomear diretórios com DOMAIN_PLACEHOLDER (para Java)
-          if [ -d "src/main/java/com/company/DOMAIN_PLACEHOLDER" ]; then
-            mv "src/main/java/com/company/DOMAIN_PLACEHOLDER" "src/main/java/com/company/$DOMAIN"
-            echo "✅ Renamed Java package to: com.company.$DOMAIN"
-          fi
-          
-          if [ -d "src/test/java/com/company/DOMAIN_PLACEHOLDER" ]; then
-            mv "src/test/java/com/company/DOMAIN_PLACEHOLDER" "src/test/java/com/company/$DOMAIN"
-          fi
-          
-          # Commit customizações
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "chore: customize repository from template
+                      if (newTitle) {
+                        await github.rest.issues.update({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          title: newTitle
+                        });
+                        console.log(`✅ Título atualizado para: ${newTitle}`);
+                      }
 
-          - Repository: $REPO_NAME
-          - Domain: $DOMAIN
-          - Stack: $STACK
-          - Deployment: $DEPLOYMENT
-          
-          Generated automatically by repository automation system" || echo "No changes to commit"
-          
-          git push origin main
-          
-          echo "✅ Repository customized and pushed!"
+            - name: 📝 Show Parsed Data
+              run: |
+                  echo "=== Parsed Issue Data ==="
+                  echo '${{ steps.parse.outputs.jsonString }}' | jq '.'
+                  echo "========================"
 
-      - name: 🏷️ Add Topics to Repository
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
-          REPO_TYPE="${{ steps.template.outputs.repo_type }}"
-          PARSED='${{ steps.parse.outputs.jsonString }}'
-          
-          # Topics baseados no tipo
-          TOPICS="a5x automated-creation"
-          
-          if [ "$REPO_TYPE" = "application" ]; then
-            STACK=$(echo "$PARSED" | jq -r '.stack // ""' | tr '[:upper:]' '[:lower:]' | tr ' .' '-')
-            DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-            DOMAIN=$(echo "$PARSED" | jq -r '.domain // ""' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
-            
-            TOPICS="$TOPICS application $STACK $DEPLOYMENT $DOMAIN"
-          else
-            INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-            ENV=$(echo "$PARSED" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-            
-            TOPICS="$TOPICS infrastructure $INFRA_TYPE $ENV"
-          fi
-          
-          echo "Adding topics: $TOPICS"
-          
-          # GitHub CLI para adicionar topics
-          echo "$TOPICS" | xargs gh repo edit "${{ env.GITHUB_ORG }}/$REPO_NAME" --add-topic
+            - name: ✅ Add Initial Comment
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: `🚀 **Solicitação Recebida!**
+                        
+                        Sua solicitação está sendo processada. O repositório será criado em breve.
 
-      - name: ✅ Success Comment
-        if: success()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const repoName = '${{ steps.template.outputs.full_repo_name }}';
-            const orgName = '${{ env.GITHUB_ORG }}';
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `✅ **Repositório Criado com Sucesso!**
-              
-              Seu novo repositório está pronto para uso:
-              
-              🔗 **Link:** https://github.com/${orgName}/${repoName}
-              
-              **Próximos Passos:**
-              1. \`git clone https://github.com/${orgName}/${repoName}.git\`
-              2. Configure as secrets necessárias (Settings → Secrets)
-              3. Revise o README.md e documentação
-              4. Comece a desenvolver! 🚀
-              
-              **Recursos incluídos:**
-              - ✅ CI/CD configurado
-              - ✅ Estrutura de projeto padronizada
-              - ✅ Documentação inicial
-              - ✅ Docker e Docker Compose
-              
-              ---
-              
-              Esta issue será fechada automaticamente.`
-            });
-            
-            await github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['completed']
-            });
-            
-            // Fechar issue
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              state: 'closed'
-            });
+            - name: ✅ Add Initial Comment
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
+                      const labels = context.payload.issue.labels.map(l => l.name);
+                      const isApp = labels.includes('application');
+                      const isInfra = labels.includes('infrastructure');
 
-      - name: ❌ Failure Comment
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `❌ **Erro na Criação do Repositório**
-              
-              Houve um problema ao criar o repositório. Por favor, verifique:
-              
-              **Possíveis Causas:**
-              - ❌ Nome do repositório já existe
-              - ❌ Nome inválido (use apenas letras, números e hífens)
-              - ❌ Template repository não encontrado
-              - ❌ Permissões insuficientes (verifique PAT_TOKEN)
-              - ❌ Stack/tipo não suportado
-              
-              **O que fazer:**
-              1. Verifique os logs do workflow para detalhes
-              2. Corrija os problemas identificados
-              3. Edite esta issue para tentar novamente
-              4. Entre em contato no Slack: \`#devops-automation\`
-              
-              **Logs:** [Ver workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
-            });
-            
-            await github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['error', 'needs-attention']
-            });
+                      let config = '';
+                      if (isApp) {
+                        config = `
+                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
+                        - 🏢 Domínio: ${parsed.domain || 'N/A'}
+                        - 💻 Stack: ${parsed.stack || 'N/A'}
+                        - 🚀 Deploy: ${parsed.deployment_target || 'N/A'}
+                        - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
+                      } else if (isInfra) {
+                        config = `
+                        - 📦 Repositório: \`${parsed.repo_name || 'N/A'}\`
+                        - 🏗️ Tipo: ${parsed.infra_type || 'N/A'}
+                        - 🌍 Ambiente: ${parsed.environment || 'N/A'}
+                        - 👁️ Visibilidade: ${parsed.visibility || 'N/A'}`;
+                      }
+
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: `🚀 **Solicitação Recebida!**
+                        
+                        Sua solicitação está sendo processada. O repositório será criado em breve.
+                        
+                        **Configurações:**${config}
+                        
+                        ⏳ Status: Em processamento...`
+                      });
+
+            - name: 🎯 Determine Template
+              id: template
+              run: |
+                  LABELS='${{ toJson(github.event.issue.labels.*.name) }}'
+                  PARSED='${{ steps.parse.outputs.jsonString }}'
+
+                  echo "Parsed data: $PARSED"
+                  echo "Labels: $LABELS"
+
+                  # Detectar tipo
+                  if echo "$LABELS" | grep -q "application"; then
+                    STACK=$(echo "$PARSED" | jq -r '.stack // empty')
+                    echo "Stack detected: $STACK"
+                    
+                    case "$STACK" in
+                      "Java 17")
+                        echo "template_repo=${{ env.TEMPLATE_JAVA_17 }}" >> $GITHUB_OUTPUT
+                        ;;
+                      "Node.js 24.12.0")
+                        echo "template_repo=${{ env.TEMPLATE_NODEJS_24 }}" >> $GITHUB_OUTPUT
+                        ;;
+                      *)
+                        echo "❌ Stack não reconhecida: $STACK"
+                        exit 1
+                        ;;
+                    esac
+                    
+                    # Construir nome completo do repo
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domain // empty' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
+                    FULL_NAME="a5x-app-${DOMAIN}-${REPO_NAME}"
+                    echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
+                    echo "repo_type=application" >> $GITHUB_OUTPUT
+                    
+                  elif echo "$LABELS" | grep -q "infrastructure"; then
+                    INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // empty')
+                    echo "Infra type detected: $INFRA_TYPE"
+                    
+                    if echo "$INFRA_TYPE" | grep -q "Terraform"; then
+                      echo "template_repo=${{ env.TEMPLATE_TERRAFORM_AWS }}" >> $GITHUB_OUTPUT
+                    else
+                      echo "❌ Tipo de infraestrutura não suportado: $INFRA_TYPE"
+                      exit 1
+                    fi
+                    
+                    # Construir nome completo do repo
+                    REPO_NAME=$(echo "$PARSED" | jq -r '.repo_name // empty')
+                    ENV=$(echo "$PARSED" | jq -r '.environment // empty' | awk '{print tolower($1)}')
+                    FULL_NAME="a5x-infra-${REPO_NAME}-${ENV}"
+                    echo "full_repo_name=$FULL_NAME" >> $GITHUB_OUTPUT
+                    echo "repo_type=infrastructure" >> $GITHUB_OUTPUT
+                  else
+                    echo "❌ Tipo de repositório não identificado"
+                    exit 1
+                  fi
+
+            - name: 🏗️ Create Repository from Template
+              env:
+                  GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+              run: |
+                  TEMPLATE="${{ env.GITHUB_ORG }}/${{ steps.template.outputs.template_repo }}"
+                  REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
+                  DESCRIPTION='${{ steps.parse.outputs.issueparser_repo_description }}'
+                  VISIBILITY="${{ steps.parse.outputs.issueparser_visibility }}"
+
+                  echo "📦 Creating repository: $REPO_NAME"
+                  echo "📋 From template: $TEMPLATE"
+                  echo "👁️ Visibility: $VISIBILITY"
+
+                  # Criar repositório a partir do template
+                  if [ "$VISIBILITY" = "Private" ]; then
+                    gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" \
+                      --template "$TEMPLATE" \
+                      --private \
+                      --description "$DESCRIPTION" \
+                      --clone
+                  else
+                    gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" \
+                      --template "$TEMPLATE" \
+                      --internal \
+                      --description "$DESCRIPTION" \
+                      --clone
+                  fi
+
+                  echo "✅ Repository created successfully!"
+
+            - name: 🔧 Customize Repository
+              run: |
+                  REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
+                  PARSED='${{ steps.parse.outputs.jsonString }}'
+
+                  cd "$REPO_NAME"
+
+                  # Extrair dados
+                  REPO_BASENAME=$(echo "$PARSED" | jq -r '.repo_name // "unknown"')
+                  DESCRIPTION=$(echo "$PARSED" | jq -r '.repo_description // "No description"')
+                  DOMAIN=$(echo "$PARSED" | jq -r '.domain // "unknown"' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                  DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // "unknown"')
+                  STACK=$(echo "$PARSED" | jq -r '.stack // "unknown"')
+                  TEAM=$(echo "$PARSED" | jq -r '.team // "DevOps Team"')
+
+                  echo "🔄 Customizing repository..."
+                  echo "  - Name: $REPO_NAME"
+                  echo "  - Domain: $DOMAIN"
+                  echo "  - Deployment: $DEPLOYMENT"
+
+                  # Substituir placeholders em todos os arquivos
+                  find . -type f \( -name "*.md" -o -name "*.yml" -o -name "*.yaml" -o -name "*.json" -o -name "*.xml" -o -name "*.java" -o -name "*.ts" -o -name "*.js" -o -name "Dockerfile" -o -name "docker-compose.yml" \) -exec sed -i \
+                    -e "s/REPO_NAME_PLACEHOLDER/$REPO_NAME/g" \
+                    -e "s/DESCRIPTION_PLACEHOLDER/$DESCRIPTION/g" \
+                    -e "s/DOMAIN_PLACEHOLDER/$DOMAIN/g" \
+                    -e "s/DEPLOYMENT_PLACEHOLDER/$DEPLOYMENT/g" \
+                    -e "s/TEAM_PLACEHOLDER/$TEAM/g" \
+                    -e "s/OWNER_PLACEHOLDER/${{ env.GITHUB_ORG }}/g" \
+                    {} +
+
+                  # Renomear diretórios com DOMAIN_PLACEHOLDER (para Java)
+                  if [ -d "src/main/java/com/company/DOMAIN_PLACEHOLDER" ]; then
+                    mv "src/main/java/com/company/DOMAIN_PLACEHOLDER" "src/main/java/com/company/$DOMAIN"
+                    echo "✅ Renamed Java package to: com.company.$DOMAIN"
+                  fi
+
+                  if [ -d "src/test/java/com/company/DOMAIN_PLACEHOLDER" ]; then
+                    mv "src/test/java/com/company/DOMAIN_PLACEHOLDER" "src/test/java/com/company/$DOMAIN"
+                  fi
+
+                  # Commit customizações
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add .
+                  git commit -m "chore: customize repository from template
+
+                  - Repository: $REPO_NAME
+                  - Domain: $DOMAIN
+                  - Stack: $STACK
+                  - Deployment: $DEPLOYMENT
+
+                  Generated automatically by repository automation system" || echo "No changes to commit"
+
+                  git push origin main
+
+                  echo "✅ Repository customized and pushed!"
+
+            - name: 🏷️ Add Topics to Repository
+              env:
+                  GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+              run: |
+                  REPO_NAME="${{ steps.template.outputs.full_repo_name }}"
+                  REPO_TYPE="${{ steps.template.outputs.repo_type }}"
+                  PARSED='${{ steps.parse.outputs.jsonString }}'
+
+                  # Topics baseados no tipo
+                  TOPICS="a5x automated-creation"
+
+                  if [ "$REPO_TYPE" = "application" ]; then
+                    STACK=$(echo "$PARSED" | jq -r '.stack // ""' | tr '[:upper:]' '[:lower:]' | tr ' .' '-')
+                    DEPLOYMENT=$(echo "$PARSED" | jq -r '.deployment_target // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+                    DOMAIN=$(echo "$PARSED" | jq -r '.domain // ""' | sed 's/ - .*//' | tr '[:upper:]' '[:lower:]')
+                    
+                    TOPICS="$TOPICS application $STACK $DEPLOYMENT $DOMAIN"
+                  else
+                    INFRA_TYPE=$(echo "$PARSED" | jq -r '.infra_type // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+                    ENV=$(echo "$PARSED" | jq -r '.environment // ""' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+                    
+                    TOPICS="$TOPICS infrastructure $INFRA_TYPE $ENV"
+                  fi
+
+                  echo "Adding topics: $TOPICS"
+
+                  # GitHub CLI para adicionar topics
+                  echo "$TOPICS" | xargs gh repo edit "${{ env.GITHUB_ORG }}/$REPO_NAME" --add-topic
+
+            - name: ✅ Success Comment
+              if: success()
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const repoName = '${{ steps.template.outputs.full_repo_name }}';
+                      const orgName = '${{ env.GITHUB_ORG }}';
+
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: `✅ **Repositório Criado com Sucesso!**
+                        
+                        Seu novo repositório está pronto para uso:
+                        
+                        🔗 **Link:** https://github.com/${orgName}/${repoName}
+                        
+                        **Próximos Passos:**
+                        1. \`git clone https://github.com/${orgName}/${repoName}.git\`
+                        2. Configure as secrets necessárias (Settings → Secrets)
+                        3. Revise o README.md e documentação
+                        4. Comece a desenvolver! 🚀
+                        
+                        **Recursos incluídos:**
+                        - ✅ CI/CD configurado
+                        - ✅ Estrutura de projeto padronizada
+                        - ✅ Documentação inicial
+                        - ✅ Docker e Docker Compose
+                        
+                        ---
+                        
+                        Esta issue será fechada automaticamente.`
+                      });
+
+                      await github.rest.issues.addLabels({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        labels: ['completed']
+                      });
+
+                      // Fechar issue
+                      await github.rest.issues.update({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        state: 'closed'
+                      });
+
+            - name: ❌ Failure Comment
+              if: failure()
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      await github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: `❌ **Erro na Criação do Repositório**
+                        
+                        Houve um problema ao criar o repositório. Por favor, verifique:
+                        
+                        **Possíveis Causas:**
+                        - ❌ Nome do repositório já existe
+                        - ❌ Nome inválido (use apenas letras, números e hífens)
+                        - ❌ Template repository não encontrado
+                        - ❌ Permissões insuficientes (verifique PAT_TOKEN)
+                        - ❌ Stack/tipo não suportado
+                        
+                        **O que fazer:**
+                        1. Verifique os logs do workflow para detalhes
+                        2. Corrija os problemas identificados
+                        3. Edite esta issue para tentar novamente
+                        4. Entre em contato no Slack: \`#devops-automation\`
+                        
+                        **Logs:** [Ver workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                      });
+
+                      await github.rest.issues.addLabels({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        labels: ['error', 'needs-attention']
+                      });
