@@ -15,7 +15,7 @@ jobs:
     validate-and-generate:
         name: 🔍 Validar e Gerar Repositório
         runs-on: ubuntu-latest
-        if: contains(github.event.issue.labels.*.name, 'new-repository')
+        if: contains(github.event.issue.labels.*.name, 'new-repo')
 
         steps:
             - name: 🛎️ Checkout Code
