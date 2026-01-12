@@ -1,15 +1,15 @@
-name: 🚀 Novo Repositório
-description: Solicitar a criação de um novo repositório a partir de templates
-title: "[NEW REPO] - "
-labels: ["new-repository", "automation"]
+name: 🏗️ Novo Repositório - Aplicação
+description: Criar repositório para aplicação (API, Frontend, Backend, etc)
+title: "[NEW APP] - "
+labels: ["new-repository", "automation", "application"]
 
 body:
   - type: markdown
     attributes:
       value: |
-        ## 🎯 Solicitação de Novo Repositório
+        ## 🎯 Solicitação de Novo Repositório - Aplicação
         
-        Preencha os campos abaixo para gerar automaticamente um novo repositório com as configurações desejadas.
+        Preencha os campos abaixo para gerar automaticamente um repositório de aplicação com as configurações desejadas.
         
         **⚠️ Importante:** Após submeter esta issue, o repositório será criado automaticamente em até 5 minutos.
 
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Nome do Repositório
       description: Nome do repositório a ser criado (sem espaços, use hífens)
-      placeholder: ex. meu-novo-projeto
+      placeholder: ex. meu-servico-api
     validations:
       required: true
 
@@ -27,7 +27,7 @@ body:
     attributes:
       label: Descrição
       description: Breve descrição do repositório
-      placeholder: ex. API de gerenciamento de usuários
+      placeholder: ex. API REST para gerenciamento de usuários
     validations:
       required: true
 
@@ -52,7 +52,22 @@ body:
         - AWS EKS (Kubernetes)
         - AWS Lambda (Serverless)
         - On Premise
-        - Não se aplica (Biblioteca)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Banco de Dados
+      description: Qual banco de dados será utilizado?
+      options:
+        - Nenhum
+        - PostgreSQL
+        - MySQL
+        - MongoDB
+        - Redis
+        - DynamoDB
+      default: 0
     validations:
       required: true
 
@@ -64,19 +79,13 @@ body:
       options:
         - label: Docker e Docker Compose
           required: false
-        - label: Terraform (Infraestrutura como Código)
-          required: false
         - label: SonarQube (Análise de Qualidade)
           required: false
         - label: OWASP Dependency Check (Segurança)
           required: false
-        - label: Jacoco (Cobertura de Código)
-          required: false
         - label: Pre-commit Hooks
           required: false
         - label: README com badges
-          required: false
-        - label: Contributing Guidelines
           required: false
 
   - type: dropdown
@@ -96,7 +105,7 @@ body:
     attributes:
       label: Time/Squad
       description: Nome do time ou squad responsável
-      placeholder: ex. Team Backend
+      placeholder: ex. Backend Squad
     validations:
       required: false
 
