@@ -53,8 +53,8 @@ body:
   - type: dropdown
     id: domain
     attributes:
-      label: Domínio da Aplicação
-      description: Qual domínio da aplicação será gerenciado?
+      label: Domínio da Infraestrutura
+      description: Qual domínio da infraestrutura será gerenciada?
       options:
         - CRX - Cross
         - DAT - Dados
