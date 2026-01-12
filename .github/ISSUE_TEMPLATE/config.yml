@@ -2,8 +2,8 @@ blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentação Completa
     url: https://github.com/4h5y87ffq8-byte/demo-reusable-workflows/wiki
-    about: Acesse a documentação completa do sistema de automação de repositórios
+    about: Acesse a documentação completa do sistema de automação de repositórios.
   
   - name: 📖 Guia de Nomenclatura
     url: https://github.com/4h5y87ffq8-byte/demo-reusable-workflows/blob/main/docs/NAMING_CONVENTIONS.md
-    about: Convenções de nomenclatura e padrões de repositórios da organização
+    about: Convenções de nomenclatura e padrões de repositórios da organização.
