@@ -32,17 +32,6 @@ body:
       required: true
 
   - type: dropdown
-    id: visibility
-    attributes:
-      label: Visibilidade do Repositório
-      description: O repositório será interno ou privado?
-      options:
-        - interno
-        - privado
-    validations:
-      required: true
-
-  - type: dropdown
     id: stack
     attributes:
       label: Stack Tecnológica
@@ -94,10 +83,10 @@ body:
     id: visibility
     attributes:
       label: Visibilidade do Repositório
-      description: O repositório será público ou privado?
+      description: O repositório será interno ou privado?
       options:
         - Private
-        - Public
+        - Internal
       default: 0
     validations:
       required: true
