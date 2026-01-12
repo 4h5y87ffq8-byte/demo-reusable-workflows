@@ -34,7 +34,7 @@ body:
   - type: input
     id: repo_name
     attributes:
-      label: Nome do Repositório
+      label: repo_name
       description: Nome do repositório a ser criado (sem espaços, use hífens).
       placeholder: ex. lseg-risk
     validations:
@@ -43,7 +43,7 @@ body:
   - type: input
     id: repo_description
     attributes:
-      label: Descrição
+      label: repo_description
       description: Breve descrição do repositório.
       placeholder: ex. Infraestrutura Terraform para gerenciamento de recursos do LSEG Risk
     validations:
@@ -52,7 +52,7 @@ body:
   - type: dropdown
     id: domain
     attributes:
-      label: Domínio da Infraestrutura
+      label: domain
       description: Qual domínio da infraestrutura será gerenciada?
       options:
         - CRX - Cross
@@ -65,7 +65,7 @@ body:
   - type: dropdown
     id: environment
     attributes:
-      label: Ambiente
+      label: environment
       description: Para qual ambiente é a infraestrutura?
       options:
         - DEV
@@ -80,7 +80,7 @@ body:
   - type: dropdown
     id: visibility
     attributes:
-      label: Visibilidade do Repositório
+      label: visibility
       description: O repositório será interno ou privado?
       options:
         - Private

@@ -34,7 +34,7 @@ body:
   - type: input
     id: repo_name
     attributes:
-      label: Nome do Repositório
+      label: repo_name
       description: Nome do repositório a ser criado (sem espaços, use hífens).
       placeholder: ex. anteros-receiver-financial
     validations:
@@ -43,7 +43,7 @@ body:
   - type: input
     id: repo_description
     attributes:
-      label: Descrição
+      label: repo_description
       description: Breve descrição do repositório.
       placeholder: ex. Engine responsável por processar todos os lançamentos financeiros, sejam eles originados pelo sistema de Clearing/Risco (LSEG) ou por outros sistemas satélites.
     validations:
@@ -52,7 +52,7 @@ body:
   - type: dropdown
     id: domain
     attributes:
-      label: Domínio da Aplicação
+      label: domain
       description: Qual domínio da aplicação será gerenciado?
       options:
         - CRX - Cross
@@ -65,7 +65,7 @@ body:
   - type: dropdown
     id: stack
     attributes:
-      label: Stack Tecnológica
+      label: stack
       description: Qual stack/linguagem será utilizada?
       options:
         - Java 17
@@ -76,7 +76,7 @@ body:
   - type: dropdown
     id: deployment_target
     attributes:
-      label: Ambiente de Deploy
+      label: deployment_target
       description: Onde a aplicação será deployada?
       options:
         - AWS ECS (Container)
@@ -89,7 +89,7 @@ body:
   - type: dropdown
     id: visibility
     attributes:
-      label: Visibilidade do Repositório
+      label: visibility
       description: O repositório será interno ou privado?
       options:
         - Private
