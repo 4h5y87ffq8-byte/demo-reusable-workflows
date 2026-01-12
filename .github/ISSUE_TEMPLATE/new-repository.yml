@@ -34,16 +34,24 @@ body:
       required: true
 
   - type: dropdown
+    id: visibility
+    attributes:
+      label: Visibilidade do Repositório
+      description: O repositório será interno ou privado?
+      options:
+        - interno
+        - privado
+    validations:
+      required: true
+
+  - type: dropdown
     id: stack
     attributes:
       label: Stack Tecnológica
       description: Qual stack/linguagem será utilizada?
       options:
-        - Java (Spring Boot)
-        - Node.js (Express)
-        - Python (FastAPI)
-        - .NET Core
-        - Go
+        - Java 17
+        - Node.js 24.12.0
     validations:
       required: true
 
@@ -57,39 +65,7 @@ body:
         - AWS EKS (Kubernetes)
         - AWS Lambda (Serverless)
         - On Premise
-        - Azure Container Instances
-        - Google Cloud Run
-    validations:
-      required: true
-
-  - type: dropdown
-    id: database
-    attributes:
-      label: Banco de Dados
-      description: Qual banco de dados será utilizado?
-      options:
-        - PostgreSQL
-        - MySQL
-        - MongoDB
-        - DynamoDB
-        - Redis
-        - Nenhum
-      default: 0
-    validations:
-      required: true
-
-  - type: dropdown
-    id: ci_cd
-    attributes:
-      label: Pipeline CI/CD
-      description: Qual tipo de pipeline deseja?
-      options:
-        - GitHub Actions (Completo - Feature, Develop, Release)
-        - GitHub Actions (Básico - Build e Test)
-        - Jenkins
-        - GitLab CI
-        - Não configurar
-      default: 0
+        - Não se aplica (Biblioteca)
     validations:
       required: true
 
