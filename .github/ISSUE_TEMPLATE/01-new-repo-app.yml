@@ -46,7 +46,7 @@ body:
     attributes:
       label: Descrição
       description: Breve descrição do repositório
-      placeholder: ex. API REST para gerenciamento de usuários
+      placeholder: ex. Engine responsável por processar todos os lançamentos financeiros, sejam eles originados pelo sistema de Clearing/Risco (LSEG) ou por outros sistemas satélites.
     validations:
       required: true
 
