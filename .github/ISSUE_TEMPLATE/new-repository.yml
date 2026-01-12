@@ -2,8 +2,6 @@ name: 🚀 Novo Repositório
 description: Solicitar a criação de um novo repositório a partir de templates
 title: "[NEW REPO] - "
 labels: ["new-repository", "automation"]
-assignees:
-  - octocat
 
 body:
   - type: markdown
