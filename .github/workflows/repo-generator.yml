@@ -28,12 +28,22 @@ jobs:
               id: parse
               uses: stefanbuck/github-issue-parser@v3
 
+            - name: 📝 Show Parsed Data
+              run: |
+                  echo "=== Parsed Issue Data ==="
+                  echo '${{ steps.parse.outputs.jsonString }}' | jq '.'
+                  echo "========================"
+
             - name: 🏷️ Update Issue Title Dynamically
               uses: actions/github-script@v7
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
                       const parsed = JSON.parse(`${{ steps.parse.outputs.jsonString }}`);
+
+                      // Debug: mostrar o conteúdo do parsed
+                      console.log('Parsed data:', JSON.stringify(parsed, null, 2));
+                      console.log('Keys:', Object.keys(parsed));
 
                       // Detectar tipo de issue pelo título
                       const issueTitle = context.payload.issue.title;
@@ -43,13 +53,13 @@ jobs:
                       let newTitle = '';
 
                       if (isApp) {
-                        const repoName = parsed.repo_name || 'unknown';
+                        const repoName = parsed.repo_name || parsed.repoName || 'unknown';
                         const stack = parsed.stack || 'unknown';
-                        const deployment = parsed.deployment_target || 'unknown';
+                        const deployment = parsed.deployment_target || parsed.deploymentTarget || 'unknown';
                         newTitle = `[NEW APP] - ${repoName} - ${stack} - ${deployment}`;
                       } else if (isInfra) {
-                        const repoName = parsed.repo_name || 'unknown';
-                        const infraType = parsed.infra_type || 'unknown';
+                        const repoName = parsed.repo_name || parsed.repoName || 'unknown';
+                        const infraType = parsed.infra_type || parsed.infraType || 'unknown';
                         const environment = parsed.environment || 'unknown';
                         newTitle = `[NEW INFRA] - ${repoName} - ${infraType} - ${environment}`;
                       }
@@ -64,9 +74,9 @@ jobs:
                         console.log(`✅ Título atualizado para: ${newTitle}`);
                       }
 
-            - name: 📝 Show Parsed Data
+            - name: 📝 Show Raw Issue Body
               run: |
-                  echo "=== Parsed Issue Data ==="
+                  echo "=== Raw Issue Body ==="
                   echo '${{ steps.parse.outputs.jsonString }}' | jq '.'
                   echo "========================"
 
