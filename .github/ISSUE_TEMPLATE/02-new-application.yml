@@ -56,39 +56,6 @@ body:
       required: true
 
   - type: dropdown
-    id: database
-    attributes:
-      label: Banco de Dados
-      description: Qual banco de dados será utilizado?
-      options:
-        - Nenhum
-        - PostgreSQL
-        - MySQL
-        - MongoDB
-        - Redis
-        - DynamoDB
-      default: 0
-    validations:
-      required: true
-
-  - type: checkboxes
-    id: features
-    attributes:
-      label: Features Adicionais
-      description: Selecione as features que deseja incluir no repositório
-      options:
-        - label: Docker e Docker Compose
-          required: false
-        - label: SonarQube (Análise de Qualidade)
-          required: false
-        - label: OWASP Dependency Check (Segurança)
-          required: false
-        - label: Pre-commit Hooks
-          required: false
-        - label: README com badges
-          required: false
-
-  - type: dropdown
     id: visibility
     attributes:
       label: Visibilidade do Repositório
@@ -99,28 +66,6 @@ body:
       default: 0
     validations:
       required: true
-
-  - type: input
-    id: team
-    attributes:
-      label: Time/Squad
-      description: Nome do time ou squad responsável
-      placeholder: ex. Backend Squad
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional_notes
-    attributes:
-      label: Notas Adicionais
-      description: Informações adicionais ou requisitos específicos
-      placeholder: |
-        Exemplo:
-        - Integração com sistema X
-        - Autenticação via OAuth2
-        - Rate limiting necessário
-    validations:
-      required: false
 
   - type: checkboxes
     id: terms
