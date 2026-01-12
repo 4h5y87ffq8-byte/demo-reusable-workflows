@@ -45,7 +45,7 @@ body:
     id: repo_description
     attributes:
       label: Descrição
-      description: Breve descrição do repositório
+      description: Breve descrição do repositório.
       placeholder: ex. Infraestrutura Terraform para gerenciamento de recursos do LSEG Risk
     validations:
       required: true
@@ -95,5 +95,5 @@ body:
       label: Confirmação
       description: Ao submeter, você confirma que
       options:
-        - label: Li e concordo com as políticas de criação de repositórios
+        - label: Li e concordo com as políticas de criação de repositórios.
           required: true
