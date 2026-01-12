@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentação Completa
+    url: https://github.com/demo-reusable-workflows/blob/main/REPO_GENERATOR.md
+    about: Consulte a documentação detalhada do sistema
+  - name: 🆘 Suporte DevOps
+    url: https://github.com/demo-reusable-workflows/issues/new?labels=support
+    about: Precisa de ajuda? Entre em contato com o time
