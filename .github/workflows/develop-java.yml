@@ -72,6 +72,9 @@ jobs:
     name: 🚀 Build Docker & Deploy
     needs: build-tests
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
@@ -86,10 +89,9 @@ jobs:
         id: aws-auth-ecr
         uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/aws-auth-ecr@main
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ env.a5x_devops__deploy__dev__account_id }}:role/a5x-github-actions-role
+          role-session-name: github-actions-deploy-${{ github.run_id }}
           aws-region: ${{ env.a5x_devops__deploy__dev__region }}
-          account-id: ${{ env.a5x_devops__deploy__dev__account_id }}
 
       - name: 🏗️ Set up QEMU
         uses: docker/setup-qemu-action@v3

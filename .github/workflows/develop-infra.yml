@@ -30,10 +30,10 @@ jobs:
           file: .a5x_devops
           root_prefix: .a5x_devops
 
-      - name: 🔐 AWS Authentication (OIDC)
+      - name: 🔐 AWS Authentication
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env[format('a5x_devops__deploy__{0}__account_id', inputs.environment)] }}:role/GitHubActionsRole
+          role-to-assume: arn:aws:iam::${{ env[format('a5x_devops__deploy__{0}__account_id', inputs.environment)] }}:role/a5x-github-actions-role
           role-session-name: terraform-${{ inputs.environment }}-${{ github.run_id }}
           aws-region: ${{ env[format('a5x_devops__deploy__{0}__region', inputs.environment)] }}
 
