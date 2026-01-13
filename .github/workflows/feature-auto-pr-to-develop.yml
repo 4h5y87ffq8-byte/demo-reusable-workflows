@@ -8,16 +8,6 @@ on:
         required: false
         type: string
         default: 'feat'
-      auto_merge:
-        description: 'Fazer merge automaticamente após criar/atualizar o PR'
-        required: false
-        type: boolean
-        default: false
-      merge_method:
-        description: 'Método de merge (squash, merge, rebase)'
-        required: false
-        type: string
-        default: 'squash'
     secrets:
       TOKEN:
         description: "GitHub token for creating pull requests"
@@ -140,42 +130,34 @@ jobs:
             
             echo "✅ PR #$existing_pr atualizado com sucesso!"
             echo "📌 URL: ${{ github.server_url }}/${{ github.repository }}/pull/$existing_pr"
-            
-            # Auto-merge se habilitado
-            if [ "${{ inputs.auto_merge }}" = "true" ]; then
-              echo "🔄 Habilitando auto-merge..."
-              gh pr merge $existing_pr \
-                --auto \
-                --${{ inputs.merge_method }} \
-                --subject "$COMMIT_TITLE" \
-                --body "$COMMIT_BODY"
-              echo "✅ Auto-merge habilitado!"
-            fi
           else
             echo "🆕 Nenhum PR encontrado para a branch '${{ github.ref_name }}'"
             echo "📝 Criando novo PR para 'develop'..."
             
-            # Criar novo PR com template
+            # Criar novo PR com template, reviewers e labels
             pr_url=$(echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
               --title "$COMMIT_TITLE" \
               --body-file - \
-              --assignee @me)
+              --assignee @me \
+              --reviewer 4h5y87ffq8-byte/github-repository-admin-team \
+              --label "auto-pr" \
+              --label "needs-review")
             
             pr_number=$(echo "$pr_url" | grep -oP '\d+$')
             echo "✅ Novo PR criado com sucesso!"
             echo "📌 URL: $pr_url"
             echo "🔢 Número: #$pr_number"
             
-            # Auto-merge se habilitado
-            if [ "${{ inputs.auto_merge }}" = "true" ]; then
-              echo "🔄 Habilitando auto-merge..."
-              gh pr merge $pr_number \
-                --auto \
-                --${{ inputs.merge_method }} \
-                --subject "$COMMIT_TITLE" \
-                --body "$COMMIT_BODY"
-              echo "✅ Auto-merge habilitado!"
-            fi
+            # Adicionar comentário mencionando os revisores
+            gh pr comment $pr_number \
+              --body "## 👥 Revisores Necessários
+
+            Este PR requer aprovação de:
+            - @4h5y87ffq8-byte/github-repository-admin-team (obrigatório)
+
+            **⚠️ Importante:** Este PR foi gerado automaticamente após build bem-sucedido.
+            
+            Por favor, revise as mudanças antes de aprovar."
           fi
