@@ -32,13 +32,22 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
-      - name: 🏗️ Build with Maven
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        run: mvn clean install
+      - name: 💾 Cache OWASP Dependency Check
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: owasp-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
 
-      - name: 🧪 Run Unit Tests
+      - name: 🏗️ Build, Test & Quality Checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
-        run: mvn test
+        run: |
+          mvn --batch-mode clean verify \
+            checkstyle:check \
+            pmd:check \
+            org.owasp:dependency-check-maven:check \
+            -T 1C \
+            -Dmaven.test.failure.ignore=false \
+            -DskipITs
 
       - name: 📤 Publish to Nexus
         working-directory: ${{ env.a5x_devops__build__working_directory }}
@@ -55,68 +64,68 @@ jobs:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
 
-      - name: 📥 Export YAML entries as env vars
-        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
+      - name: 📥 Export YAML entries as env vars-workflows/.github/action/aws-auth-ecr@main
+        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main        with:
         with:
-          file: .a5x_devops
-          root_prefix: .a5x_devops
-
+          file: .a5x_devops{ secrets.AWS_SECRET_ACCESS_KEY }}
+          root_prefix: .a5x_devops-region: ${{ env.a5x_devops__deploy__dev__region }}
+_devops__deploy__dev__account_id }}
       - name: 🔐 AWS Authentication ECR
-        id: aws-auth-ecr
-        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/aws-auth-ecr@main
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.a5x_devops__deploy__dev__region }}
-          account-id: ${{ env.a5x_devops__deploy__dev__account_id }}
-
-      - name: 🏗️ Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: 🔧 Set up Docker Buildx
+        id: aws-auth-ecr      - name: 🏗️ Set up QEMU
         uses: docker/setup-buildx-action@v3
 
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4docker/setup-buildx-action@v3
         with:
-          distribution: "temurin"
+          distribution: "temurin"d__stack_version }}
           java-version: ${{ env.a5x_devops__build__stack_version }}
-
+        with:
       - name: 📝 Extract version from pom.xml
         id: version
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUTirectory }}
           echo "short_sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
       - name: 🐳 Build & Push Docker Image
-        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/docker-build-push@main
+        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/docker-build-push@main          echo "short_sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
         with:
-          working-directory: ${{ env.a5x_devops__build__working_directory }}
-          image-name: ${{ env.a5x_devops__deploy__image_name }}
+          working-directory: ${{ env.a5x_devops__build__working_directory }}🐳 Build & Push Docker Image
+          image-name: ${{ env.a5x_devops__deploy__image_name }}hub/action/docker-build-push@main
           repository: ${{ env.a5x_devops__deploy__repository }}
-          registry: ${{ steps.aws-auth-ecr.outputs.registry }}
+          registry: ${{ steps.aws-auth-ecr.outputs.registry }}y }}
           tag: ${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
-          platforms: ${{ env.a5x_devops__deploy__platform }}
+          platforms: ${{ env.a5x_devops__deploy__platform }}vops__deploy__repository }}
 
-      - name: 🎯 Force ECS Service Update
-        run: |
+      - name: 🎯 Force ECS Service Update          tag: ${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
+        run: |eploy__platform }}
           echo "Forcing new deployment for ECS service..."
           aws ecs update-service \
             --cluster ${{ env.a5x_devops__deploy__ecs__cluster_name }} \
             --service ${{ env.a5x_devops__deploy__ecs__service_name }} \
             --force-new-deployment \
-            --region ${{ env.a5x_devops__deploy__dev__region }}
-
-      - name: ⏳ Wait for Service Stability
-        run: |
+            --region ${{ env.a5x_devops__deploy__dev__region }}name }} \
+            --service ${{ env.a5x_devops__deploy__ecs__service_name }} \
+      - name: ⏳ Wait for Service Stability\
+        run: |region ${{ env.a5x_devops__deploy__dev__region }}
           echo "Waiting for service to stabilize..."
-          aws ecs wait services-stable \
+          aws ecs wait services-stable \y
             --cluster ${{ env.a5x_devops__deploy__ecs__cluster_name }} \
             --services ${{ env.a5x_devops__deploy__ecs__service_name }} \
             --region ${{ env.a5x_devops__deploy__dev__region }}
 
+      - name: 📊 Deployment Summary
+        run: |            --region ${{ env.a5x_devops__deploy__dev__region }}
+
+
+
+
+
+
+
+
+          echo "- **Service:** ${{ env.a5x_devops__deploy__ecs__service_name }}" >> $GITHUB_STEP_SUMMARY          echo "- **Cluster:** ${{ env.a5x_devops__deploy__ecs__cluster_name }}" >> $GITHUB_STEP_SUMMARY          echo "- **Image:** ${{ steps.aws-auth-ecr.outputs.registry }}/${{ env.a5x_devops__deploy__repository }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY          echo "- **Commit:** ${{ steps.version.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY          echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY          echo "" >> $GITHUB_STEP_SUMMARY          echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
       - name: 📊 Deployment Summary
         run: |
           echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY

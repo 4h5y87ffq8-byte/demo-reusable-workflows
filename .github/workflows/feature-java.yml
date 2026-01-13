@@ -26,20 +26,28 @@ jobs:
           restore-keys: |
             maven-${{ runner.os }}-
 
+      - name: 💾 Cache OWASP Dependency Check
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: owasp-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
-      - name: 🏗️ Build with Maven
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        run: mvn clean install
-
-      - name: ✅ Run Maven Quality Checks
+      - name: 🏗️ Build, Test & Quality Checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
-          mvn --batch-mode clean verify checkstyle:check pmd:check org.owasp:dependency-check-maven:check -T 1C -Dmaven.test.failure.ignore=false -DskipITs
+          mvn --batch-mode clean verify \
+            checkstyle:check \
+            pmd:check \
+            org.owasp:dependency-check-maven:check \
+            -T 1C \
+            -Dmaven.test.failure.ignore=false \
+            -DskipITs
 
   auto-pr:
     needs: build
