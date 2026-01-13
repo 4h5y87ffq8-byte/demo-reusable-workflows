@@ -37,6 +37,9 @@ jobs:
         run: |
           echo "⚠️ Modo WARN: Quality checks não bloquearão o build"
           mvn --batch-mode clean verify \
+            -Dcheckstyle.skip=true \
+            -Dpmd.skip=true \
+            -Dspotbugs.skip=true \
             -T 1C \
             -Dmaven.test.failure.ignore=false \
             -DskipITs
@@ -48,11 +51,11 @@ jobs:
         run: |
           echo "Running quality checks in non-blocking mode..."
           
-          # Checkstyle
-          mvn checkstyle:check -Dcheckstyle.failOnViolation=false || true
+          # Checkstyle (ignora falhas)
+          mvn checkstyle:check -Dcheckstyle.failOnViolation=false 2>&1 || echo "Checkstyle completed with warnings"
           
-          # PMD
-          mvn pmd:check -Dpmd.failOnViolation=false || true
+          # PMD (ignora falhas)
+          mvn pmd:check -Dpmd.failOnViolation=false 2>&1 || echo "PMD completed with warnings"
 
       - name: 🔒 Security Check (Blocking)
         working-directory: ${{ env.a5x_devops__build__working_directory }}
@@ -60,7 +63,7 @@ jobs:
           echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=false \
+            -DautoUpdate=true \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check
 
@@ -73,18 +76,56 @@ jobs:
           
           # Checkstyle violations
           if [ -f target/checkstyle-result.xml ]; then
-            violations=$(grep -c "severity=\"warning\"" target/checkstyle-result.xml || echo "0")
-            echo "- **Checkstyle:** $violations warnings" >> $GITHUB_STEP_SUMMARY
+            violations=$(grep -c "<error" target/checkstyle-result.xml || echo "0")
+            echo "## 🔍 Checkstyle: $violations violations" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$violations" -gt "0" ]; then
+              echo "<details>" >> $GITHUB_STEP_SUMMARY
+              echo "<summary>Click to expand violations</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              
+              # Extrair detalhes das violações
+              grep -A 0 "<error" target/checkstyle-result.xml | \
+                sed 's/<error/\n<error/g' | \
+                grep "line=" | \
+                sed -E 's/.*line="([0-9]+)".*column="([0-9]+)".*severity="([^"]+)".*message="([^"]+)".*source="([^"]+)".*/File: \5\n  Line \1:\2 [\3] \4/' | \
+                head -50 >> $GITHUB_STEP_SUMMARY || echo "Unable to parse violations" >> $GITHUB_STEP_SUMMARY
+              
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "</details>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
           
           # PMD violations
           if [ -f target/pmd.xml ]; then
             violations=$(grep -c "<violation" target/pmd.xml || echo "0")
-            echo "- **PMD:** $violations issues" >> $GITHUB_STEP_SUMMARY
+            echo "## 🔍 PMD: $violations issues" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$violations" -gt "0" ]; then
+              echo "<details>" >> $GITHUB_STEP_SUMMARY
+              echo "<summary>Click to expand issues</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              
+              # Extrair detalhes das violações PMD
+              grep -B 2 "<violation" target/pmd.xml | \
+                sed 's/--/\n---\n/g' | \
+                head -100 >> $GITHUB_STEP_SUMMARY || echo "Unable to parse violations" >> $GITHUB_STEP_SUMMARY
+              
+              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "</details>" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
           
+          echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 **Nota:** Violações não bloqueiam em feature branches." >> $GITHUB_STEP_SUMMARY
+          echo "Elas **bloquearão** o merge para develop/main." >> $GITHUB_STEP_SUMMARY
 
   auto-pr:
     needs: build
