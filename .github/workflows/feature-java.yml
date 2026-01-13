@@ -2,6 +2,10 @@ name: Java Feature Workflow
 
 on:
   workflow_call:
+    secrets:
+      NVD_API_KEY:
+        description: "NVD API Key for OWASP Dependency Check (optional)"
+        required: true
 
 jobs:
   build:
