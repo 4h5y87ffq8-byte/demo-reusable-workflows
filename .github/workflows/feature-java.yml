@@ -72,11 +72,13 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           echo "Running OWASP security check (warnings only)..."
+          
+          # Tentar com autoUpdate se falhar sem
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=false \
+            -DautoUpdate=true \
             -Dformats=HTML,JSON \
-            -DoutputDirectory=target/dependency-check || echo "⚠️ OWASP completed with warnings"
+            -DoutputDirectory=target/dependency-check 2>&1 || echo "⚠️ OWASP completed with warnings"
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔒 Security Summary" >> $GITHUB_STEP_SUMMARY

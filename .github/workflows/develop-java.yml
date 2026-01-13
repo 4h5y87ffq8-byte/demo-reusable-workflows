@@ -50,7 +50,7 @@ jobs:
           echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=false \
+            -DautoUpdate=true \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check
           
