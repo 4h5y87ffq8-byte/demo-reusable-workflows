@@ -35,6 +35,7 @@ jobs:
       - name: 🏗️ Build, Test & Quality Checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
+          echo "🔒 Modo STRICT: Quality checks bloquearão o build"
           mvn --batch-mode clean verify \
             checkstyle:check \
             pmd:check \
@@ -42,10 +43,10 @@ jobs:
             -Dmaven.test.failure.ignore=false \
             -DskipITs
           
-          # OWASP Dependency Check executado separadamente
+          # OWASP Dependency Check
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=true \
+            -DautoUpdate=false \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check
 

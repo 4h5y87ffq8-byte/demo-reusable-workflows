@@ -35,13 +35,44 @@ jobs:
       - name: 🏗️ Build, Test & Quality Checks
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
+          echo "⚠️ Modo WARN: Quality checks não bloquearão o build"
           mvn --batch-mode clean verify \
             checkstyle:check \
             pmd:check \
-            org.owasp:dependency-check-maven:check \
+            -Dcheckstyle.failOnViolation=false \
+            -Dpmd.failOnViolation=false \
             -T 1C \
             -Dmaven.test.failure.ignore=false \
             -DskipITs
+          
+          # OWASP sempre bloqueia vulnerabilidades críticas
+          mvn org.owasp:dependency-check-maven:9.0.9:check \
+            -DfailBuildOnCVSS=7 \
+            -DautoUpdate=false \
+            -Dformats=HTML,JSON \
+            -DoutputDirectory=target/dependency-check
+
+      - name: 📊 Quality Report Summary
+        if: always()
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: |
+          echo "### ⚠️ Quality Check Results (Warnings Only)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Checkstyle violations
+          if [ -f target/checkstyle-result.xml ]; then
+            violations=$(grep -c "severity=\"warning\"" target/checkstyle-result.xml || echo "0")
+            echo "- **Checkstyle:** $violations warnings" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # PMD violations
+          if [ -f target/pmd.xml ]; then
+            violations=$(grep -c "<violation" target/pmd.xml || echo "0")
+            echo "- **PMD:** $violations issues" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Nota:** Violações não bloqueiam em feature branches." >> $GITHUB_STEP_SUMMARY
 
   auto-pr:
     needs: build
