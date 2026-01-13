@@ -66,6 +66,12 @@ jobs:
           aws-region: ${{ env.a5x_devops__deploy__dev__region }}
           account-id: ${{ env.a5x_devops__deploy__dev__account_id }}
 
+      - name: 🏗️ Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: 📝 Extract version from pom.xml
         id: version
         working-directory: ${{ env.a5x_devops__build__working_directory }}
@@ -82,6 +88,7 @@ jobs:
           repository: ${{ env.a5x_devops__deploy__repository }}
           registry: ${{ steps.aws-auth-ecr.outputs.registry }}
           tag: ${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
+          platforms: ${{ env.a5x_devops__deploy__platform }}
 
       - name: 📝 Update task definition with new image
         id: task-def
