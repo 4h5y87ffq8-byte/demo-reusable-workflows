@@ -121,9 +121,9 @@ jobs:
               --title "$COMMIT_TITLE" \
               --body-file -
             
-            # Adicionar comentário incremental ao PR
-            gh pr comment $existing_pr \
-              --body "## 🔄 Atualização Automática
+            # Adicionar comentário incremental ao PR com quality summary
+            COMMENT_BODY=$(cat << EOF
+            ## 🔄 Atualização Automática
 
             Novo build concluído com sucesso!
 
@@ -132,8 +132,14 @@ jobs:
             **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             **📝 Commit:** \`${{ github.sha }}\`
             
+            ${{ inputs.quality_summary }}
+            
             ---
-            _Comentário gerado automaticamente pelo workflow_"
+            _Comentário gerado automaticamente pelo workflow_
+            EOF
+            )
+            
+            echo "$COMMENT_BODY" | gh pr comment $existing_pr --body-file -
             
             echo "✅ PR #$existing_pr atualizado com sucesso!"
             echo "📌 URL: ${{ github.server_url }}/${{ github.repository }}/pull/$existing_pr"
