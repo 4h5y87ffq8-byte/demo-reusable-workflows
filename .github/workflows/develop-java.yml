@@ -48,6 +48,16 @@ jobs:
           mvn checkstyle:check pmd:check
           
           echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
+          
+          # Validar se NVD_API_KEY está presente
+          if [ -n "$NVD_API_KEY" ]; then
+            echo "✓ NVD_API_KEY is present (length: ${#NVD_API_KEY} chars)"
+            echo "✓ Using NVD API Key for faster updates"
+          else
+            echo "⚠️ NVD_API_KEY is NOT present or empty"
+            echo "⚠️ OWASP scan will be slower without API key"
+          fi
+          
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
             -DautoUpdate=true \
