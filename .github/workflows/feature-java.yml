@@ -77,6 +77,27 @@ jobs:
             -DautoUpdate=false \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check || echo "⚠️ OWASP completed with warnings"
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔒 Security Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f target/dependency-check/dependency-check-report.json ]; then
+            vulnerabilities=$(jq '.dependencies[].vulnerabilities[]?' target/dependency-check/dependency-check-report.json 2>/dev/null | grep -c "name" || echo "0")
+            echo "- **OWASP:** $vulnerabilities vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$vulnerabilities" -gt "0" ]; then
+              critical=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="CRITICAL")] | length' target/dependency-check/dependency-check-report.json 2>/dev/null || echo "0")
+              high=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="HIGH")] | length' target/dependency-check/dependency-check-report.json 2>/dev/null || echo "0")
+              echo "  - Critical: $critical" >> $GITHUB_STEP_SUMMARY
+              echo "  - High: $high" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- **OWASP:** ⚠️ Check skipped or failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔐 Security vulnerabilities will block merge to develop" >> $GITHUB_STEP_SUMMARY
 
   auto-pr:
     needs: build
