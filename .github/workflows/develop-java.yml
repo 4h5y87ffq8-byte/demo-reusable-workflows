@@ -41,9 +41,18 @@ jobs:
 
       - name: 🔒 Quality & Security Checks (Blocking)
         working-directory: ${{ env.a5x_devops__build__working_directory }}
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           echo "Running quality checks (BLOCKS on violations)..."
           mvn checkstyle:check pmd:check
+          
+          echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
+          mvn org.owasp:dependency-check-maven:9.0.9:check \
+            -DfailBuildOnCVSS=7 \
+            -DautoUpdate=false \
+            -Dformats=HTML,JSON \
+            -DoutputDirectory=target/dependency-check
 
       - name: 📤 Publish to Nexus
         working-directory: ${{ env.a5x_devops__build__working_directory }}

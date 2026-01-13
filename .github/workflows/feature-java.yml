@@ -64,6 +64,20 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 Quality issues will be enforced on merge to develop" >> $GITHUB_STEP_SUMMARY
 
+      - name: 🔒 Security Scan (Non-blocking)
+        if: success()
+        continue-on-error: true
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          echo "Running OWASP security check (warnings only)..."
+          mvn org.owasp:dependency-check-maven:9.0.9:check \
+            -DfailBuildOnCVSS=7 \
+            -DautoUpdate=false \
+            -Dformats=HTML,JSON \
+            -DoutputDirectory=target/dependency-check || echo "⚠️ OWASP completed with warnings"
+
   auto-pr:
     needs: build
     uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
