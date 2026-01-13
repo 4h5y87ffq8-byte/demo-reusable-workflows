@@ -55,12 +55,13 @@ jobs:
             echo "✓ Using NVD API Key for faster updates"
           else
             echo "⚠️ NVD_API_KEY is NOT present or empty"
-            echo "⚠️ OWASP scan will be slower without API key"
+            echo "⚠️ OWASP will use cached database only"
           fi
           
+          # Usar autoUpdate=false até resolver o secret
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=true \
+            -DautoUpdate=false \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check
           

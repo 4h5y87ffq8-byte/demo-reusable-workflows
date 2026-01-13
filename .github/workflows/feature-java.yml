@@ -2,10 +2,6 @@ name: Java Feature Workflow
 
 on:
   workflow_call:
-    secrets:
-      NVD_API_KEY:
-        description: "NVD API Key for OWASP Dependency Check (optional)"
-        required: true
 
 jobs:
   build:
@@ -83,12 +79,13 @@ jobs:
             echo "✓ First 8 chars: ${NVD_API_KEY:0:8}..."
           else
             echo "⚠️ NVD_API_KEY is NOT present or empty"
-            echo "⚠️ OWASP scan will be slower without API key"
+            echo "⚠️ OWASP will use cached database only (no updates)"
           fi
           
+          # Rodar sem autoUpdate para evitar erro 403/404
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
-            -DautoUpdate=true \
+            -DautoUpdate=false \
             -Dformats=HTML,JSON \
             -DoutputDirectory=target/dependency-check 2>&1 || echo "⚠️ OWASP completed with warnings"
           
