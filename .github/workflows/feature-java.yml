@@ -70,7 +70,7 @@ jobs:
           - **Checkstyle:** $checkstyle_violations violations
           - **PMD:** $pmd_violations issues
           
-          💡 **Note:** These quality issues are for informational purposes only. They will be enforced when merging to develop.
+          💡 **Nota:** Estas violações de qualidade são apenas informativas neste estágio.
           EOF
           
           # Exportar como output

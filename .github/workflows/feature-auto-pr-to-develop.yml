@@ -90,16 +90,7 @@ jobs:
           
           ---
           
-          **⚠️ Atenção:** Este PR foi gerado automaticamente. Revise as mudanças antes de fazer merge.
-          
-          ## 📋 Mensagem de Commit Sugerida
-          
-          **Título:** \`$COMMIT_TITLE\`
-          
-          **Descrição:**
-          \`\`\`
-          $COMMIT_BODY
-          \`\`\`"
+          **⚠️ Atenção:** Este PR foi gerado automaticamente. Revise as mudanças antes de fazer merge."
           
           echo "🔍 Verificando se já existe PR da branch '${{ github.ref_name }}' para 'develop'..."
           
@@ -141,28 +132,16 @@ jobs:
             echo "🆕 Nenhum PR encontrado para a branch '${{ github.ref_name }}'"
             echo "📝 Criando novo PR para 'develop'..."
             
-            # Criar novo PR com template e reviewers
+            # Criar novo PR com template
             pr_url=$(echo "$PR_TEMPLATE" | gh pr create \
               --base develop \
               --head ${{ github.ref_name }} \
               --title "$COMMIT_TITLE" \
               --body-file - \
-              --assignee @me \
-              --reviewer 4h5y87ffq8-byte/github-repository-admin-team)
+              --assignee @me)
             
             pr_number=$(echo "$pr_url" | grep -oP '\d+$')
             echo "✅ Novo PR criado com sucesso!"
             echo "📌 URL: $pr_url"
             echo "🔢 Número: #$pr_number"
-            
-            # Adicionar comentário mencionando os revisores
-            gh pr comment $pr_number \
-              --body "## 👥 Revisores Necessários
-
-            Este PR requer aprovação de:
-            - @4h5y87ffq8-byte/github-repository-admin-team (obrigatório)
-
-            **⚠️ Importante:** Este PR foi gerado automaticamente após build bem-sucedido.
-            
-            Por favor, revise as mudanças antes de aprovar."
           fi
