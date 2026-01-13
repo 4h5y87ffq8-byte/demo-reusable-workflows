@@ -7,6 +7,8 @@ jobs:
   build:
     name: 🚀 Java Feature Build
     runs-on: ubuntu-latest
+    outputs:
+      quality-summary: ${{ steps.quality-report.outputs.summary }}
     steps:
       - name: 🛎️ Checkout Code
         uses: actions/checkout@v4
@@ -41,6 +43,7 @@ jobs:
             -DskipITs
 
       - name: 📊 Code Quality Report
+        id: quality-report
         if: success()
         continue-on-error: true
         working-directory: ${{ env.a5x_devops__build__working_directory }}
@@ -48,23 +51,36 @@ jobs:
           echo "Running code quality checks..."
           mvn checkstyle:check pmd:check -Dcheckstyle.failOnViolation=false -Dpmd.failOnViolation=false || true
           
+          # Coletar métricas
+          checkstyle_violations=$(grep -c "<error" target/checkstyle-result.xml 2>/dev/null || echo "0")
+          pmd_violations=$(grep -c "<violation" target/pmd.xml 2>/dev/null || echo "0")
+          
+          # Criar summary para GitHub Actions
           echo "### 📊 Code Quality Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ -f target/checkstyle-result.xml ]; then
-            violations=$(grep -c "<error" target/checkstyle-result.xml 2>/dev/null || echo "0")
-            echo "- **Checkstyle:** $violations violations" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ -f target/pmd.xml ]; then
-            violations=$(grep -c "<violation" target/pmd.xml 2>/dev/null || echo "0")
-            echo "- **PMD:** $violations issues" >> $GITHUB_STEP_SUMMARY
-          fi
-          
+          echo "- **Checkstyle:** $checkstyle_violations violations" >> $GITHUB_STEP_SUMMARY
+          echo "- **PMD:** $pmd_violations issues" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 Quality issues will be enforced on merge to develop" >> $GITHUB_STEP_SUMMARY
+          
+          # Criar summary para comentário no PR
+          cat << EOF > quality-summary.txt
+          ## 📊 Code Quality Report
+          
+          - **Checkstyle:** $checkstyle_violations violations
+          - **PMD:** $pmd_violations issues
+          
+          💡 **Note:** These quality issues are for informational purposes only. They will be enforced when merging to develop.
+          EOF
+          
+          # Exportar como output
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          cat quality-summary.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   auto-pr:
     needs: build
     uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
+    with:
+      quality_summary: ${{ needs.build.outputs.quality-summary }}
     secrets: inherit

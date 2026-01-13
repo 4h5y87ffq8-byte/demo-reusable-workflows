@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: 'feat'
+      quality_summary:
+        description: 'Quality summary from build job'
+        required: false
+        type: string
+        default: ''
     secrets:
       TOKEN:
         description: "GitHub token for creating pull requests"
@@ -74,6 +79,8 @@ jobs:
           - **🔗 Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **📝 Commit:** \`${{ github.sha }}\`
           - **👤 Autor:** @${{ github.actor }}
+          
+          ${{ inputs.quality_summary }}
           
           ## ✅ Checklist
           
