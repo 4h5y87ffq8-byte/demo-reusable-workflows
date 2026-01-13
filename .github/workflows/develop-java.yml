@@ -57,6 +57,15 @@ jobs:
     needs: publish-nexus
     runs-on: ubuntu-latest
     steps:
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Export YAML entries as env vars
+        uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/export-yaml-env@main
+        with:
+          file: .a5x_devops
+          root_prefix: .a5x_devops
+
       - name: 🔐 AWS Authentication ECR
         id: aws-auth-ecr
         uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/action/aws-auth-ecr@main
@@ -71,6 +80,12 @@ jobs:
 
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.a5x_devops__build__stack_version }}
 
       - name: 📝 Extract version from pom.xml
         id: version
@@ -90,18 +105,29 @@ jobs:
           tag: ${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
           platforms: ${{ env.a5x_devops__deploy__platform }}
 
-      - name: 📝 Update task definition with new image
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.a5x_devops__deploy__dev__task_definition_file }}
-          container-name: ${{ env.a5x_devops__deploy__ecs__container_name }}
-          image: ${{ steps.aws-auth-ecr.outputs.registry }}/${{ env.a5x_devops__deploy__repository }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}
+      - name: 🎯 Force ECS Service Update
+        run: |
+          echo "Forcing new deployment for ECS service..."
+          aws ecs update-service \
+            --cluster ${{ env.a5x_devops__deploy__ecs__cluster_name }} \
+            --service ${{ env.a5x_devops__deploy__ecs__service_name }} \
+            --force-new-deployment \
+            --region ${{ env.a5x_devops__deploy__dev__region }}
 
-      - name: 🎯 Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.a5x_devops__deploy__ecs__service_name }}
-          cluster: ${{ env.a5x_devops__deploy__ecs__cluster_name }}
-          wait-for-service-stability: true
+      - name: ⏳ Wait for Service Stability
+        run: |
+          echo "Waiting for service to stabilize..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.a5x_devops__deploy__ecs__cluster_name }} \
+            --services ${{ env.a5x_devops__deploy__ecs__service_name }} \
+            --region ${{ env.a5x_devops__deploy__dev__region }}
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "### 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ steps.version.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** ${{ steps.aws-auth-ecr.outputs.registry }}/${{ env.a5x_devops__deploy__repository }}:${{ steps.version.outputs.version }}-${{ steps.version.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cluster:** ${{ env.a5x_devops__deploy__ecs__cluster_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service:** ${{ env.a5x_devops__deploy__ecs__service_name }}" >> $GITHUB_STEP_SUMMARY
