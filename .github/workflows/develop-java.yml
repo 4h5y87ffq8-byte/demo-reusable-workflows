@@ -40,10 +40,22 @@ jobs:
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: mvn test
 
-  publish-deploy:
-    name: 🚀 Publish & Deploy
-    runs-on: ubuntu-latest
+  publish-nexus:
+    name: 📦 Publish to Nexus
     needs: build-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📤 Publish to Nexus
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: mvn deploy -DskipTests
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+
+  publish-deploy:
+    name: 🚀 Build Docker & Deploy
+    needs: publish-nexus
+    runs-on: ubuntu-latest
     steps:
       - name: 🔐 AWS Authentication ECR
         id: aws-auth-ecr

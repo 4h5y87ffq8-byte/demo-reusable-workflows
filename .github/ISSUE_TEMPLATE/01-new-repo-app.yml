@@ -79,9 +79,9 @@ body:
       label: deployment_target
       description: Onde a aplicação será deployada?
       options:
-        - AWS ECS (Container)
-        - AWS EKS (Kubernetes)
-        - AWS Lambda (Serverless)
+        - AWS ECS
+        - AWS EKS
+        - AWS Lambda
         - On Premise
     validations:
       required: true
