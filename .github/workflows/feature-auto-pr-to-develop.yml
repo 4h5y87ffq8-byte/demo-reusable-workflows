@@ -66,9 +66,8 @@ jobs:
           Commit: ${{ github.sha }}
           Author: @${{ github.actor }}"
           
-          # Template do PR (centralizado no workflow)
-          PR_TEMPLATE=$(cat << EOF
-          ## 📝 Resumo
+          # Template do PR
+          PR_TEMPLATE="## 📝 Resumo
           
           PR automático criado após build bem-sucedido da branch \`${{ github.ref_name }}\`.
           
@@ -100,9 +99,7 @@ jobs:
           **Descrição:**
           \`\`\`
           $COMMIT_BODY
-          \`\`\`
-          EOF
-          )
+          \`\`\`"
           
           echo "🔍 Verificando se já existe PR da branch '${{ github.ref_name }}' para 'develop'..."
           
@@ -116,14 +113,13 @@ jobs:
             echo "♻️ PR já existe para esta branch: #$existing_pr"
             echo "📝 Atualizando PR existente com informações do novo commit..."
             
-            # Atualizar título e body do PR existente com informações atualizadas
+            # Atualizar título e body do PR existente
             echo "$PR_TEMPLATE" | gh pr edit $existing_pr \
               --title "$COMMIT_TITLE" \
               --body-file -
             
-            # Adicionar comentário incremental ao PR com quality summary
-            COMMENT_BODY=$(cat << EOF
-            ## 🔄 Atualização Automática
+            # Adicionar comentário incremental ao PR
+            COMMENT_BODY="## 🔄 Atualização Automática
 
             Novo build concluído com sucesso!
 
@@ -135,9 +131,7 @@ jobs:
             ${{ inputs.quality_summary }}
             
             ---
-            _Comentário gerado automaticamente pelo workflow_
-            EOF
-            )
+            _Comentário gerado automaticamente pelo workflow_"
             
             echo "$COMMENT_BODY" | gh pr comment $existing_pr --body-file -
             
