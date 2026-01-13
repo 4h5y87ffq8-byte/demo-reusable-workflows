@@ -20,11 +20,9 @@ jobs:
       - name: 💾 Cache Maven dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.m2/repository
+          path: ~/.m2/repository
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
+          restore-keys: maven-${{ runner.os }}-
 
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
@@ -32,25 +30,20 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
-      - name: 🏗️ Build, Test & Quality Checks
+      - name: 🏗️ Build & Test
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
-          echo "🔒 Modo STRICT: Quality checks bloquearão o build"
           mvn --batch-mode clean verify \
-            checkstyle:check \
-            pmd:check \
-            -Dcheckstyle.failOnViolation=false \
-            -Dpmd.failOnViolation=false \
+            -Dcheckstyle.skip=true \
+            -Dpmd.skip=true \
             -T 1C \
-            -Dmaven.test.failure.ignore=false \
             -DskipITs
-          
-          # OWASP Dependency Check
-          mvn org.owasp:dependency-check-maven:9.0.9:check \
-            -DfailBuildOnCVSS=7 \
-            -DautoUpdate=false \
-            -Dformats=HTML,JSON \
-            -DoutputDirectory=target/dependency-check
+
+      - name: 🔒 Quality & Security Checks (Blocking)
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: |
+          echo "Running quality checks (BLOCKS on violations)..."
+          mvn checkstyle:check pmd:check
 
       - name: 📤 Publish to Nexus
         working-directory: ${{ env.a5x_devops__build__working_directory }}

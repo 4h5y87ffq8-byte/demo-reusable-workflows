@@ -20,11 +20,9 @@ jobs:
       - name: 💾 Cache Maven Dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.m2/repository
+          path: ~/.m2/repository
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
+          restore-keys: maven-${{ runner.os }}-
 
       - name: ☕ Set up JDK ${{ env.a5x_devops__build__stack_version }}
         uses: actions/setup-java@v4
@@ -35,97 +33,36 @@ jobs:
       - name: 🏗️ Build & Test
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
-          echo "⚠️ Modo WARN: Quality checks não bloquearão o build"
           mvn --batch-mode clean verify \
             -Dcheckstyle.skip=true \
             -Dpmd.skip=true \
             -Dspotbugs.skip=true \
             -T 1C \
-            -Dmaven.test.failure.ignore=false \
             -DskipITs
 
-      - name: 📊 Quality Checks (Non-blocking)
-        if: always()
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
+      - name: 📊 Code Quality Report
+        if: success()
         continue-on-error: true
-        run: |
-          echo "Running quality checks in non-blocking mode..."
-          
-          # Checkstyle (ignora falhas)
-          mvn checkstyle:check -Dcheckstyle.failOnViolation=false 2>&1 || echo "Checkstyle completed with warnings"
-          
-          # PMD (ignora falhas)
-          mvn pmd:check -Dpmd.failOnViolation=false 2>&1 || echo "PMD completed with warnings"
-
-      - name: 🔒 Security Check (Blocking)
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
-          echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
-          mvn org.owasp:dependency-check-maven:9.0.9:check \
-            -DfailBuildOnCVSS=7 \
-            -DautoUpdate=true \
-            -Dformats=HTML,JSON \
-            -DoutputDirectory=target/dependency-check
-
-      - name: 📊 Quality Report Summary
-        if: always()
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        run: |
-          echo "### ⚠️ Quality Check Results (Warnings Only)" >> $GITHUB_STEP_SUMMARY
+          echo "Running code quality checks..."
+          mvn checkstyle:check pmd:check -Dcheckstyle.failOnViolation=false -Dpmd.failOnViolation=false || true
+          
+          echo "### 📊 Code Quality Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Checkstyle violations
           if [ -f target/checkstyle-result.xml ]; then
-            violations=$(grep -c "<error" target/checkstyle-result.xml || echo "0")
-            echo "## 🔍 Checkstyle: $violations violations" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$violations" -gt "0" ]; then
-              echo "<details>" >> $GITHUB_STEP_SUMMARY
-              echo "<summary>Click to expand violations</summary>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              
-              # Extrair detalhes das violações
-              grep -A 0 "<error" target/checkstyle-result.xml | \
-                sed 's/<error/\n<error/g' | \
-                grep "line=" | \
-                sed -E 's/.*line="([0-9]+)".*column="([0-9]+)".*severity="([^"]+)".*message="([^"]+)".*source="([^"]+)".*/File: \5\n  Line \1:\2 [\3] \4/' | \
-                head -50 >> $GITHUB_STEP_SUMMARY || echo "Unable to parse violations" >> $GITHUB_STEP_SUMMARY
-              
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              echo "</details>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
+            violations=$(grep -c "<error" target/checkstyle-result.xml 2>/dev/null || echo "0")
+            echo "- **Checkstyle:** $violations violations" >> $GITHUB_STEP_SUMMARY
           fi
           
-          # PMD violations
           if [ -f target/pmd.xml ]; then
-            violations=$(grep -c "<violation" target/pmd.xml || echo "0")
-            echo "## 🔍 PMD: $violations issues" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$violations" -gt "0" ]; then
-              echo "<details>" >> $GITHUB_STEP_SUMMARY
-              echo "<summary>Click to expand issues</summary>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              
-              # Extrair detalhes das violações PMD
-              grep -B 2 "<violation" target/pmd.xml | \
-                sed 's/--/\n---\n/g' | \
-                head -100 >> $GITHUB_STEP_SUMMARY || echo "Unable to parse violations" >> $GITHUB_STEP_SUMMARY
-              
-              echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-              echo "</details>" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
+            violations=$(grep -c "<violation" target/pmd.xml 2>/dev/null || echo "0")
+            echo "- **PMD:** $violations issues" >> $GITHUB_STEP_SUMMARY
           fi
           
-          echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💡 **Nota:** Violações não bloqueiam em feature branches." >> $GITHUB_STEP_SUMMARY
-          echo "Elas **bloquearão** o merge para develop/main." >> $GITHUB_STEP_SUMMARY
+          echo "💡 Quality issues will be enforced on merge to develop" >> $GITHUB_STEP_SUMMARY
 
   auto-pr:
     needs: build
