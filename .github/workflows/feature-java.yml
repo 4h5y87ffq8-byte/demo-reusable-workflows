@@ -64,43 +64,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 Quality issues will be enforced on merge to develop" >> $GITHUB_STEP_SUMMARY
 
-      - name: 🔒 Security Scan (Non-blocking)
-        if: success()
-        continue-on-error: true
-        working-directory: ${{ env.a5x_devops__build__working_directory }}
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: |
-          echo "Running OWASP security check (warnings only)..."
-                
-          # Rodar check sem autoUpdate
-          mvn org.owasp:dependency-check-maven:9.0.9:check \
-            -DfailBuildOnCVSS=7 \
-            -DautoUpdate=true \
-            -Dformats=HTML,JSON \
-            -DoutputDirectory=target/dependency-check 2>&1 || echo "⚠️ OWASP completed with warnings"
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔒 Security Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ -f target/dependency-check/dependency-check-report.json ]; then
-            vulnerabilities=$(jq '.dependencies[].vulnerabilities[]?' target/dependency-check/dependency-check-report.json 2>/dev/null | grep -c "name" || echo "0")
-            echo "- **OWASP:** $vulnerabilities vulnerabilities found" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$vulnerabilities" -gt "0" ]; then
-              critical=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="CRITICAL")] | length' target/dependency-check/dependency-check-report.json 2>/dev/null || echo "0")
-              high=$(jq '[.dependencies[].vulnerabilities[]? | select(.severity=="HIGH")] | length' target/dependency-check/dependency-check-report.json 2>/dev/null || echo "0")
-              echo "  - Critical: $critical" >> $GITHUB_STEP_SUMMARY
-              echo "  - High: $high" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "- **OWASP:** ⚠️ Check skipped or failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔐 Security vulnerabilities will block merge to develop" >> $GITHUB_STEP_SUMMARY
-
   auto-pr:
     needs: build
     uses: 4h5y87ffq8-byte/demo-reusable-workflows/.github/workflows/feature-auto-pr-to-develop.yml@main
