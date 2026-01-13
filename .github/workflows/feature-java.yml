@@ -32,20 +32,32 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.a5x_devops__build__stack_version }}
 
-      - name: 🏗️ Build, Test & Quality Checks
+      - name: 🏗️ Build & Test
         working-directory: ${{ env.a5x_devops__build__working_directory }}
         run: |
           echo "⚠️ Modo WARN: Quality checks não bloquearão o build"
           mvn --batch-mode clean verify \
-            checkstyle:check \
-            pmd:check \
-            -Dcheckstyle.failOnViolation=false \
-            -Dpmd.failOnViolation=false \
             -T 1C \
             -Dmaven.test.failure.ignore=false \
             -DskipITs
+
+      - name: 📊 Quality Checks (Non-blocking)
+        if: always()
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        continue-on-error: true
+        run: |
+          echo "Running quality checks in non-blocking mode..."
           
-          # OWASP sempre bloqueia vulnerabilidades críticas
+          # Checkstyle
+          mvn checkstyle:check -Dcheckstyle.failOnViolation=false || true
+          
+          # PMD
+          mvn pmd:check -Dpmd.failOnViolation=false || true
+
+      - name: 🔒 Security Check (Blocking)
+        working-directory: ${{ env.a5x_devops__build__working_directory }}
+        run: |
+          echo "Running OWASP security check (BLOCKS on vulnerabilities)..."
           mvn org.owasp:dependency-check-maven:9.0.9:check \
             -DfailBuildOnCVSS=7 \
             -DautoUpdate=false \

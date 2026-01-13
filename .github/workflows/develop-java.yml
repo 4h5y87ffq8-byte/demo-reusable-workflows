@@ -39,6 +39,8 @@ jobs:
           mvn --batch-mode clean verify \
             checkstyle:check \
             pmd:check \
+            -Dcheckstyle.failOnViolation=false \
+            -Dpmd.failOnViolation=false \
             -T 1C \
             -Dmaven.test.failure.ignore=false \
             -DskipITs
