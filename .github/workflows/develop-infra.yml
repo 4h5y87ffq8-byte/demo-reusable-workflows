@@ -4,19 +4,22 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'Target environment (dev, cer, prd)'
+        description: "Target environment (dev, cer, prd)"
         required: true
         type: string
       action:
-        description: 'Terraform action (plan, apply, destroy)'
+        description: "Terraform action (plan, apply, destroy)"
         required: false
         type: string
-        default: 'plan'
+        default: "plan"
 
 jobs:
   terraform:
     name: 🏗️ Terraform ${{ inputs.action }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Necessário para OIDC
+      contents: read
     steps:
       - name: 🛎️ Checkout code
         uses: actions/checkout@v4
@@ -27,20 +30,20 @@ jobs:
           file: .a5x_devops
           root_prefix: .a5x_devops
 
-      - name: 🔐 AWS Authentication
+      - name: 🔐 AWS Authentication (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ env[format('a5x_devops__deploy__{0}__account_id', inputs.environment)] }}:role/GitHubActionsRole
+          role-session-name: terraform-${{ inputs.environment }}-${{ github.run_id }}
           aws-region: ${{ env[format('a5x_devops__deploy__{0}__region', inputs.environment)] }}
 
       - name: 🪣 Validate/Create S3 Backend Bucket
         run: |
           BUCKET_NAME="${{ env.a5x_devops__deploy__terraform__backend_bucket }}"
           REGION="${{ env.a5x_devops__deploy__terraform__backend_region }}"
-          
+
           echo "Checking if bucket $BUCKET_NAME exists..."
-          
+
           if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             echo "✅ Bucket $BUCKET_NAME already exists"
           else
@@ -87,9 +90,9 @@ jobs:
         run: |
           TABLE_NAME="${{ env.a5x_devops__deploy__terraform__backend_bucket }}-lock"
           REGION="${{ env.a5x_devops__deploy__terraform__backend_region }}"
-          
+
           echo "Checking if DynamoDB table $TABLE_NAME exists..."
-          
+
           if aws dynamodb describe-table --table-name "$TABLE_NAME" --region "$REGION" 2>/dev/null; then
             echo "✅ DynamoDB table $TABLE_NAME already exists"
           else
@@ -123,7 +126,7 @@ jobs:
           dynamodb_table = "${{ env.a5x_devops__deploy__terraform__backend_bucket }}-lock"
           encrypt        = true
           EOF
-          
+
           echo "Backend configuration:"
           cat backend-${{ inputs.environment }}.tfbackend
 
@@ -191,16 +194,16 @@ jobs:
           TF_VAR_ecr_repository_name: ${{ env.a5x_devops__deploy__repository }}
         run: |
           ALLOW_DESTROY="${{ env[format('a5x_devops__deploy__{0}__destroy', inputs.environment)] }}"
-          
+
           if [ "$ALLOW_DESTROY" != "true" ]; then
             echo "❌ Destroy is not allowed for environment: ${{ inputs.environment }}"
             echo "To enable destroy, set 'destroy: true' in .a5x_devops for this environment"
             exit 1
           fi
-          
+
           echo "⚠️ Destroying infrastructure for environment: ${{ inputs.environment }}"
           echo "⚠️ This action is irreversible!"
-          
+
           terraform destroy -auto-approve
 
       - name: 📊 Terraform Output
@@ -225,7 +228,7 @@ jobs:
           echo "- **Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Backend Bucket:** ${{ env.a5x_devops__deploy__terraform__backend_bucket }}" >> $GITHUB_STEP_SUMMARY
           echo "- **State Key:** ${{ env.a5x_devops__deploy__terraform__backend_key_prefix }}/${{ inputs.environment }}/terraform.tfstate" >> $GITHUB_STEP_SUMMARY
-          
+          echo "- **Destroy Allowed:** ${{ env[format('a5x_devops__deploy__{0}__destroy', inputs.environment)] }}" >> $GITHUB_STEP_SUMMARY
           if [ "${{ inputs.action }}" = "destroy" ]; then
             echo "- **Destroy Allowed:** ${{ env[format('a5x_devops__deploy__{0}__destroy', inputs.environment)] }}" >> $GITHUB_STEP_SUMMARY
           fi
